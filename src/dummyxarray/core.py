@@ -39,6 +39,50 @@ class DummyArray:
         self.data = data
         self.encoding = encoding or {}
 
+    def __repr__(self):
+        """Return a string representation of the DummyArray."""
+        lines = ["<dummyxarray.DummyArray>"]
+        
+        # Dimensions
+        if self.dims:
+            dims_str = f"({', '.join(self.dims)})"
+        else:
+            dims_str = "()"
+        lines.append(f"Dimensions: {dims_str}")
+        
+        # Data info
+        if self.data is not None:
+            data_array = np.asarray(self.data)
+            lines.append(f"Shape: {data_array.shape}")
+            lines.append(f"dtype: {data_array.dtype}")
+            
+            # Show a preview of the data
+            if data_array.size <= 10:
+                lines.append(f"Data: {data_array}")
+            else:
+                flat = data_array.flatten()
+                preview = f"[{flat[0]}, {flat[1]}, ..., {flat[-1]}]"
+                lines.append(f"Data: {preview}")
+        else:
+            lines.append("Data: None")
+        
+        # Attributes
+        if self.attrs:
+            lines.append("Attributes:")
+            for key, value in self.attrs.items():
+                value_str = str(value)
+                if len(value_str) > 40:
+                    value_str = value_str[:37] + "..."
+                lines.append(f"    {key}: {value_str}")
+        
+        # Encoding
+        if self.encoding:
+            lines.append("Encoding:")
+            for key, value in self.encoding.items():
+                lines.append(f"    {key}: {value}")
+        
+        return "\n".join(lines)
+
     def infer_dims_from_data(self):
         """
         Infer dimension names and sizes from data shape.
@@ -87,6 +131,107 @@ class DummyDataset:
         self.coords = {}      # coord_name → DummyArray
         self.variables = {}   # var_name  → DummyArray
         self.attrs = {}       # global attributes
+
+    def __repr__(self):
+        """Return a string representation similar to xarray.Dataset."""
+        lines = ["<dummyxarray.DummyDataset>"]
+        
+        # Dimensions
+        if self.dims:
+            lines.append("Dimensions:")
+            dim_strs = [f"  {name}: {size}" for name, size in self.dims.items()]
+            lines.extend(dim_strs)
+        else:
+            lines.append("Dimensions: ()")
+        
+        # Coordinates
+        if self.coords:
+            lines.append("Coordinates:")
+            for name, arr in self.coords.items():
+                dims_str = f"({', '.join(arr.dims)})" if arr.dims else "()"
+                has_data = "✓" if arr.data is not None else "✗"
+                dtype_str = f"{arr.data.dtype}" if arr.data is not None else "?"
+                lines.append(f"  {has_data} {name:20s} {dims_str:20s} {dtype_str}")
+        
+        # Data variables
+        if self.variables:
+            lines.append("Data variables:")
+            for name, arr in self.variables.items():
+                dims_str = f"({', '.join(arr.dims)})" if arr.dims else "()"
+                has_data = "✓" if arr.data is not None else "✗"
+                dtype_str = f"{arr.data.dtype}" if arr.data is not None else "?"
+                lines.append(f"  {has_data} {name:20s} {dims_str:20s} {dtype_str}")
+        
+        # Global attributes
+        if self.attrs:
+            lines.append("Attributes:")
+            for key, value in self.attrs.items():
+                value_str = str(value)
+                if len(value_str) > 50:
+                    value_str = value_str[:47] + "..."
+                lines.append(f"    {key}: {value_str}")
+        
+        return "\n".join(lines)
+
+    def __getattr__(self, name):
+        """
+        Allow attribute-style access to coordinates and variables.
+        
+        This enables xarray-style access like `ds.time` instead of `ds.coords['time']`.
+        Coordinates take precedence over variables if both exist with the same name.
+        
+        Parameters
+        ----------
+        name : str
+            Name of the coordinate or variable to access
+            
+        Returns
+        -------
+        DummyArray
+            The coordinate or variable array
+            
+        Raises
+        ------
+        AttributeError
+            If the name is not found in coords or variables
+        """
+        # Check coordinates first (like xarray does)
+        if name in self.coords:
+            return self.coords[name]
+        # Then check variables
+        if name in self.variables:
+            return self.variables[name]
+        # If not found, raise AttributeError
+        raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+
+    def __setattr__(self, name, value):
+        """
+        Handle attribute assignment.
+        
+        Special handling for internal attributes (dims, coords, variables, attrs).
+        For other names, this could be extended to allow setting coords/variables.
+        """
+        # Internal attributes that should be set normally
+        if name in ('dims', 'coords', 'variables', 'attrs'):
+            object.__setattr__(self, name, value)
+        else:
+            # For now, raise an error to avoid confusion
+            # Could be extended to allow ds.time = DummyArray(...) in the future
+            raise AttributeError(
+                f"Cannot set attribute '{name}' directly. "
+                f"Use ds.coords['{name}'] or ds.variables['{name}'] instead."
+            )
+
+    def __dir__(self):
+        """
+        Customize dir() output to include coordinates and variables.
+        
+        This makes tab-completion work in IPython/Jupyter.
+        """
+        # Get default attributes
+        default_attrs = set(object.__dir__(self))
+        # Add coordinate and variable names
+        return sorted(default_attrs | set(self.coords.keys()) | set(self.variables.keys()))
 
     # ------------------------------------------------------------
     # Core API
@@ -405,6 +550,154 @@ class DummyDataset:
             )
         
         return ds
+
+    def populate_with_random_data(self, seed=None):
+        """
+        Populate all variables and coordinates with random but meaningful data.
+        
+        This method generates random data based on variable metadata (units,
+        standard_name, etc.) to create realistic-looking test datasets.
+        
+        Parameters
+        ----------
+        seed : int, optional
+            Random seed for reproducibility
+            
+        Returns
+        -------
+        self
+            Returns self for method chaining
+            
+        Examples
+        --------
+        >>> ds = DummyDataset()
+        >>> ds.add_dim("time", 10)
+        >>> ds.add_dim("lat", 5)
+        >>> ds.add_coord("time", ["time"], attrs={"units": "days"})
+        >>> ds.add_variable("temperature", ["time", "lat"], 
+        ...                 attrs={"units": "K"})
+        >>> ds.populate_with_random_data(seed=42)
+        >>> print(ds.coords["time"].data)
+        [0 1 2 3 4 5 6 7 8 9]
+        """
+        if seed is not None:
+            np.random.seed(seed)
+        
+        # Populate coordinates
+        for coord_name, coord_array in self.coords.items():
+            if coord_array.data is None:
+                coord_array.data = self._generate_coordinate_data(
+                    coord_name, coord_array
+                )
+        
+        # Populate variables
+        for var_name, var_array in self.variables.items():
+            if var_array.data is None:
+                var_array.data = self._generate_variable_data(
+                    var_name, var_array
+                )
+        
+        return self
+    
+    def _generate_coordinate_data(self, name, array):
+        """Generate meaningful coordinate data based on metadata."""
+        shape = tuple(self.dims[d] for d in array.dims)
+        size = shape[0] if shape else 1
+        
+        # Check standard_name or units for hints
+        standard_name = array.attrs.get("standard_name", "").lower()
+        units = array.attrs.get("units", "").lower()
+        
+        # Time coordinates
+        if "time" in name.lower() or "time" in standard_name:
+            return np.arange(size)
+        
+        # Latitude coordinates
+        if "lat" in name.lower() or "latitude" in standard_name:
+            return np.linspace(-90, 90, size)
+        
+        # Longitude coordinates
+        if "lon" in name.lower() or "longitude" in standard_name:
+            return np.linspace(-180, 180, size)
+        
+        # Vertical levels (pressure, height, etc.)
+        if any(x in name.lower() for x in ["lev", "level", "plev", "height", "depth"]):
+            if "pressure" in units or "hpa" in units or "pa" in units:
+                # Pressure levels (high to low)
+                return np.linspace(1000, 100, size)
+            else:
+                # Generic levels
+                return np.arange(size)
+        
+        # Default: sequential integers
+        return np.arange(size)
+    
+    def _generate_variable_data(self, name, array):
+        """Generate meaningful variable data based on metadata."""
+        shape = tuple(self.dims[d] for d in array.dims)
+        
+        # Get metadata hints
+        standard_name = array.attrs.get("standard_name", "").lower()
+        units = array.attrs.get("units", "").lower()
+        long_name = array.attrs.get("long_name", "").lower()
+        
+        # Temperature variables
+        if any(x in standard_name or x in name.lower() or x in long_name 
+               for x in ["temperature", "temp", "tas", "ts"]):
+            if "k" == units or "kelvin" in units:
+                # Temperature in Kelvin (250-310K range)
+                return np.random.uniform(250, 310, shape)
+            elif "c" == units or "celsius" in units or "degc" in units:
+                # Temperature in Celsius (-30 to 40C range)
+                return np.random.uniform(-30, 40, shape)
+            else:
+                return np.random.uniform(250, 310, shape)
+        
+        # Pressure variables (check before precipitation to avoid "pr" conflict)
+        if any(x in standard_name or x in name.lower() or x in long_name
+               for x in ["pressure", "pres", "psl"]):
+            if "sea_level" in standard_name or "msl" in name.lower() or "psl" in name.lower():
+                # Sea level pressure (980-1040 hPa)
+                return np.random.uniform(98000, 104000, shape)
+            else:
+                # Generic pressure
+                return np.random.uniform(50000, 105000, shape)
+        
+        # Precipitation variables
+        if any(x in standard_name or x in name.lower() or x in long_name
+               for x in ["precipitation", "precip", "rain"]) or name.lower() == "pr":
+            # Precipitation (always positive, skewed distribution)
+            return np.random.exponential(0.001, shape)
+        
+        # Wind variables
+        if any(x in standard_name or x in name.lower() or x in long_name
+               for x in ["wind", "velocity"]):
+            # Wind speed (0-30 m/s, can be negative for components)
+            if any(x in name.lower() for x in ["u", "zonal", "eastward"]):
+                return np.random.uniform(-20, 20, shape)
+            elif any(x in name.lower() for x in ["v", "meridional", "northward"]):
+                return np.random.uniform(-20, 20, shape)
+            else:
+                return np.random.uniform(0, 30, shape)
+        
+        # Humidity variables
+        if any(x in standard_name or x in name.lower() or x in long_name
+               for x in ["humidity", "moisture", "rh"]):
+            if "relative" in standard_name or "relative" in long_name:
+                # Relative humidity (0-100%)
+                return np.random.uniform(20, 100, shape)
+            else:
+                # Specific humidity (small positive values)
+                return np.random.uniform(0, 0.02, shape)
+        
+        # Radiation variables
+        if any(x in standard_name or x in name.lower() or x in long_name
+               for x in ["radiation", "flux"]):
+            # Radiation (positive values, 0-1000 W/m²)
+            return np.random.uniform(0, 1000, shape)
+        
+        # Default: standard normal distribution
+        return np.random.randn(*shape)
 
     # ------------------------------------------------------------
     # Build xarray.Dataset

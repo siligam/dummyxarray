@@ -53,6 +53,31 @@ class TestDummyArray:
         assert result["attrs"] == {"units": "days"}
         assert result["has_data"] is True
 
+    def test_repr_without_data(self):
+        """Test repr for DummyArray without data"""
+        arr = DummyArray(dims=["time", "lat"], attrs={"units": "K"})
+        repr_str = repr(arr)
+        
+        assert "<dummyxarray.DummyArray>" in repr_str
+        assert "Dimensions: (time, lat)" in repr_str
+        assert "Data: None" in repr_str
+        assert "units: K" in repr_str
+
+    def test_repr_with_data(self):
+        """Test repr for DummyArray with data"""
+        arr = DummyArray(
+            dims=["time"],
+            attrs={"units": "K"},
+            data=np.array([1, 2, 3, 4, 5])
+        )
+        repr_str = repr(arr)
+        
+        assert "<dummyxarray.DummyArray>" in repr_str
+        assert "Dimensions: (time)" in repr_str
+        assert "Shape: (5,)" in repr_str
+        assert "dtype:" in repr_str
+        assert "Data:" in repr_str
+
 
 class TestDummyDataset:
     """Tests for DummyDataset class"""
@@ -362,6 +387,221 @@ class TestDummyDataset:
         # Check encoding is preserved
         assert dummy_ds.variables["temperature"].encoding["dtype"] == "float32"
         assert dummy_ds.variables["temperature"].encoding["chunks"] == (5,)
+
+    def test_populate_with_random_data(self):
+        """Test populating dataset with random data"""
+        ds = DummyDataset()
+        ds.add_dim("time", 10)
+        ds.add_dim("lat", 5)
+        ds.add_dim("lon", 8)
+        
+        # Add coordinates without data
+        ds.add_coord("time", ["time"], attrs={"units": "days"})
+        ds.add_coord("lat", ["lat"], attrs={"units": "degrees_north"})
+        ds.add_coord("lon", ["lon"], attrs={"units": "degrees_east"})
+        
+        # Add variable without data
+        ds.add_variable("temperature", ["time", "lat", "lon"],
+                       attrs={"units": "K", "standard_name": "air_temperature"})
+        
+        # Populate with random data
+        ds.populate_with_random_data(seed=42)
+        
+        # Check that data was added
+        assert ds.coords["time"].data is not None
+        assert ds.coords["lat"].data is not None
+        assert ds.coords["lon"].data is not None
+        assert ds.variables["temperature"].data is not None
+        
+        # Check shapes
+        assert ds.coords["time"].data.shape == (10,)
+        assert ds.coords["lat"].data.shape == (5,)
+        assert ds.coords["lon"].data.shape == (8,)
+        assert ds.variables["temperature"].data.shape == (10, 5, 8)
+        
+        # Check coordinate data is meaningful
+        assert np.all(ds.coords["lat"].data >= -90)
+        assert np.all(ds.coords["lat"].data <= 90)
+        assert np.all(ds.coords["lon"].data >= -180)
+        assert np.all(ds.coords["lon"].data <= 180)
+        
+        # Check temperature is in reasonable range (Kelvin)
+        assert np.all(ds.variables["temperature"].data >= 250)
+        assert np.all(ds.variables["temperature"].data <= 310)
+
+    def test_populate_with_random_data_reproducible(self):
+        """Test that populate with seed is reproducible"""
+        ds1 = DummyDataset()
+        ds1.add_dim("time", 5)
+        ds1.add_variable("temp", ["time"], attrs={"units": "K"})
+        ds1.populate_with_random_data(seed=123)
+        
+        ds2 = DummyDataset()
+        ds2.add_dim("time", 5)
+        ds2.add_variable("temp", ["time"], attrs={"units": "K"})
+        ds2.populate_with_random_data(seed=123)
+        
+        # Should be identical with same seed
+        np.testing.assert_array_equal(
+            ds1.variables["temp"].data,
+            ds2.variables["temp"].data
+        )
+
+    def test_populate_different_variable_types(self):
+        """Test that different variable types get appropriate data"""
+        ds = DummyDataset()
+        ds.add_dim("time", 10)
+        
+        # Add different types of variables
+        ds.add_variable("tas", ["time"],
+                       attrs={"standard_name": "air_temperature", "units": "K"})
+        ds.add_variable("pr", ["time"],
+                       attrs={"standard_name": "precipitation_flux"})
+        ds.add_variable("psl", ["time"],
+                       attrs={"standard_name": "air_pressure_at_sea_level"})
+        
+        ds.populate_with_random_data(seed=42)
+        
+        # Temperature should be in Kelvin range
+        assert np.all(ds.variables["tas"].data >= 250)
+        assert np.all(ds.variables["tas"].data <= 310)
+        
+        # Precipitation should be positive
+        assert np.all(ds.variables["pr"].data >= 0)
+        
+        # Sea level pressure should be reasonable
+        assert np.all(ds.variables["psl"].data >= 98000)
+        assert np.all(ds.variables["psl"].data <= 104000)
+
+    def test_populate_only_missing_data(self):
+        """Test that populate doesn't overwrite existing data"""
+        ds = DummyDataset()
+        ds.add_dim("time", 5)
+        
+        # Add variable with existing data
+        existing_data = np.array([1, 2, 3, 4, 5])
+        ds.add_variable("existing", ["time"], data=existing_data)
+        
+        # Add variable without data
+        ds.add_variable("new", ["time"])
+        
+        ds.populate_with_random_data(seed=42)
+        
+        # Existing data should not be changed
+        np.testing.assert_array_equal(ds.variables["existing"].data, existing_data)
+        
+        # New variable should have data
+        assert ds.variables["new"].data is not None
+
+    def test_repr_empty(self):
+        """Test repr for empty dataset"""
+        ds = DummyDataset()
+        repr_str = repr(ds)
+        assert "<dummyxarray.DummyDataset>" in repr_str
+        assert "Dimensions: ()" in repr_str
+
+    def test_repr_with_content(self):
+        """Test repr with dimensions, coords, and variables"""
+        ds = DummyDataset()
+        ds.add_dim("time", 10)
+        ds.add_coord("time", ["time"], attrs={"units": "days"})
+        ds.add_variable("temp", ["time"], attrs={"units": "K"})
+        ds.set_global_attrs(title="Test Dataset")
+        
+        repr_str = repr(ds)
+        
+        # Check structure
+        assert "<dummyxarray.DummyDataset>" in repr_str
+        assert "Dimensions:" in repr_str
+        assert "time: 10" in repr_str
+        assert "Coordinates:" in repr_str
+        assert "time" in repr_str
+        assert "Data variables:" in repr_str
+        assert "temp" in repr_str
+        assert "Attributes:" in repr_str
+        assert "title: Test Dataset" in repr_str
+        
+        # Check data indicators (no data yet)
+        assert "✗" in repr_str
+
+    def test_repr_with_data(self):
+        """Test repr shows data presence correctly"""
+        ds = DummyDataset()
+        ds.add_dim("time", 5)
+        ds.add_variable("temp", ["time"])
+        
+        # Before data
+        repr_before = repr(ds)
+        assert "✗" in repr_before
+        assert "?" in repr_before
+        
+        # After data
+        ds.populate_with_random_data(seed=42)
+        repr_after = repr(ds)
+        assert "✓" in repr_after
+        assert "float64" in repr_after or "int64" in repr_after
+
+    def test_attribute_access_coords(self):
+        """Test attribute-style access for coordinates"""
+        ds = DummyDataset()
+        ds.add_dim("time", 10)
+        ds.add_coord("time", ["time"], attrs={"units": "days"})
+        
+        # Access via attribute
+        coord = ds.time
+        assert coord is ds.coords["time"]
+        assert coord.attrs["units"] == "days"
+
+    def test_attribute_access_variables(self):
+        """Test attribute-style access for variables"""
+        ds = DummyDataset()
+        ds.add_dim("time", 10)
+        ds.add_variable("temperature", ["time"], attrs={"units": "K"})
+        
+        # Access via attribute
+        var = ds.temperature
+        assert var is ds.variables["temperature"]
+        assert var.attrs["units"] == "K"
+
+    def test_attribute_access_precedence(self):
+        """Test that coordinates take precedence over variables"""
+        ds = DummyDataset()
+        ds.add_dim("time", 10)
+        ds.add_coord("time", ["time"], attrs={"type": "coord"})
+        # This would be unusual but test the precedence
+        ds.add_variable("time", ["time"], attrs={"type": "var"})
+        
+        # Should get coordinate, not variable
+        accessed = ds.time
+        assert accessed is ds.coords["time"]
+        assert accessed.attrs["type"] == "coord"
+
+    def test_attribute_access_error(self):
+        """Test that accessing non-existent attribute raises error"""
+        ds = DummyDataset()
+        
+        with pytest.raises(AttributeError, match="no attribute 'nonexistent'"):
+            _ = ds.nonexistent
+
+    def test_attribute_set_error(self):
+        """Test that setting attributes directly is not allowed"""
+        ds = DummyDataset()
+        
+        with pytest.raises(AttributeError, match="Cannot set attribute"):
+            ds.time = DummyArray()
+
+    def test_dir_includes_coords_and_vars(self):
+        """Test that dir() includes coordinates and variables"""
+        ds = DummyDataset()
+        ds.add_dim("time", 10)
+        ds.add_coord("time", ["time"])
+        ds.add_variable("temperature", ["time"])
+        
+        dir_result = dir(ds)
+        assert "time" in dir_result
+        assert "temperature" in dir_result
+        assert "coords" in dir_result
+        assert "variables" in dir_result
 
 
 if __name__ == "__main__":
