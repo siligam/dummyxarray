@@ -302,8 +302,9 @@ print(ds.temperature)           # Access variable
 
 # Modify via attribute access
 ds.time.data = np.arange(10)
-ds.time.attrs["standard_name"] = "time"
-ds.time.attrs["calendar"] = "gregorian"
+
+# Use assign_attrs for xarray-compatible API
+ds.time.assign_attrs(standard_name="time", calendar="gregorian")
 
 # Rich repr shows structure clearly
 print(ds)

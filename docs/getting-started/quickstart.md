@@ -10,8 +10,8 @@ from dummyxarray import DummyDataset
 # Create an empty dataset
 ds = DummyDataset()
 
-# Set global attributes
-ds.set_global_attrs(
+# Set global attributes (xarray-compatible API)
+ds.assign_attrs(
     title="My First Dataset",
     institution="Research Institute",
     experiment="test_run"
@@ -192,7 +192,10 @@ ds.temperature             # Same as ds.variables['temperature']
 
 # Modify via attribute access
 ds.time.data = np.arange(10)
-ds.time.attrs["standard_name"] = "time"
+ds.time.assign_attrs(standard_name="time", calendar="gregorian")
+
+# Or use dictionary-style access
+ds.temperature.attrs["cell_methods"] = "time: mean"
 
 # Inspect with rich repr
 print(ds.time)             # Shows dimensions, shape, dtype, data, attrs

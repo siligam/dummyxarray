@@ -77,6 +77,26 @@ class TestDummyArray:
         assert "Shape: (5,)" in repr_str
         assert "dtype:" in repr_str
         assert "Data:" in repr_str
+    
+    def test_assign_attrs(self):
+        """Test assign_attrs method for DummyArray"""
+        arr = DummyArray(dims=["time"])
+        
+        # Test basic assignment
+        result = arr.assign_attrs(units="K", long_name="Temperature")
+        assert result is arr  # Should return self
+        assert arr.attrs["units"] == "K"
+        assert arr.attrs["long_name"] == "Temperature"
+        
+        # Test chaining
+        arr.assign_attrs(standard_name="air_temperature").assign_attrs(cell_methods="time: mean")
+        assert arr.attrs["standard_name"] == "air_temperature"
+        assert arr.attrs["cell_methods"] == "time: mean"
+        
+        # Test updating existing attributes
+        arr.assign_attrs(units="Celsius")
+        assert arr.attrs["units"] == "Celsius"
+        assert len(arr.attrs) == 4  # units, long_name, standard_name, cell_methods
 
 
 class TestDummyDataset:
@@ -97,6 +117,33 @@ class TestDummyDataset:
         
         assert ds.attrs["title"] == "Test"
         assert ds.attrs["institution"] == "DKRZ"
+    
+    def test_assign_attrs(self):
+        """Test assign_attrs method for DummyDataset (xarray-compatible API)"""
+        ds = DummyDataset()
+        
+        # Test basic assignment
+        result = ds.assign_attrs(title="Test Dataset", institution="DKRZ")
+        assert result is ds  # Should return self for chaining
+        assert ds.attrs["title"] == "Test Dataset"
+        assert ds.attrs["institution"] == "DKRZ"
+        
+        # Test method chaining
+        ds.assign_attrs(experiment="historical").assign_attrs(source="Model v1.0")
+        assert ds.attrs["experiment"] == "historical"
+        assert ds.attrs["source"] == "Model v1.0"
+        
+        # Test updating existing attributes
+        ds.assign_attrs(title="Updated Title")
+        assert ds.attrs["title"] == "Updated Title"
+        assert len(ds.attrs) == 4  # title, institution, experiment, source
+        
+        # Test that it's equivalent to set_global_attrs
+        ds2 = DummyDataset()
+        ds2.set_global_attrs(title="Test")
+        ds3 = DummyDataset()
+        ds3.assign_attrs(title="Test")
+        assert ds2.attrs == ds3.attrs
 
     def test_add_dim(self):
         """Test adding dimensions"""

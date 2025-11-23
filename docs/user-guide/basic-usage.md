@@ -17,14 +17,18 @@ ds = DummyDataset()
 Global attributes provide metadata about the entire dataset:
 
 ```python
-ds.set_global_attrs(
+# Use assign_attrs (xarray-compatible API)
+ds.assign_attrs(
     title="My Climate Dataset",
     institution="Research Institute",
     source="Model v2.0",
     Conventions="CF-1.8"
 )
 
-# You can also update attributes later
+# You can also update attributes later with method chaining
+ds.assign_attrs(experiment="historical").assign_attrs(version="1.0")
+
+# Or use set_global_attrs (legacy method, equivalent)
 ds.set_global_attrs(experiment="historical")
 ```
 
@@ -149,7 +153,12 @@ ds.lat                     # Same as ds.coords['lat']
 
 # Modify data via attribute access
 ds.time.data = np.arange(10)
-ds.time.attrs["standard_name"] = "time"
+
+# Assign attributes using xarray-compatible API
+ds.time.assign_attrs(standard_name="time", calendar="gregorian")
+
+# Or use dictionary-style access
+ds.temperature.attrs["cell_methods"] = "time: mean"
 
 # Inspect with rich repr
 print(ds.time)

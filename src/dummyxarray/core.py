@@ -99,6 +99,31 @@ class DummyArray:
             return dict(zip(self.dims, shape))
         return {}
 
+    def assign_attrs(self, **kwargs):
+        """
+        Assign new attributes to this array (xarray-compatible API).
+        
+        This method updates the array's attributes dictionary in-place.
+        
+        Parameters
+        ----------
+        **kwargs
+            Attribute key-value pairs to assign
+            
+        Returns
+        -------
+        DummyArray
+            Returns self for method chaining
+            
+        Examples
+        --------
+        >>> arr = DummyArray(dims=["time"])
+        >>> arr.assign_attrs(units="K", long_name="Temperature")
+        >>> arr.assign_attrs(standard_name="air_temperature")
+        """
+        self.attrs.update(kwargs)
+        return self
+    
     def to_dict(self):
         """
         Export structure (without data) for serialization.
@@ -251,6 +276,37 @@ class DummyDataset:
         >>> ds.set_global_attrs(title="My Dataset", institution="DKRZ")
         """
         self.attrs.update(kwargs)
+    
+    def assign_attrs(self, **kwargs):
+        """
+        Assign new global attributes to this dataset (xarray-compatible API).
+        
+        This method updates the dataset's global attributes dictionary in-place
+        and returns self for method chaining, matching xarray's behavior.
+        
+        Parameters
+        ----------
+        **kwargs
+            Attribute key-value pairs to assign
+            
+        Returns
+        -------
+        DummyDataset
+            Returns self for method chaining
+            
+        Examples
+        --------
+        >>> ds = DummyDataset()
+        >>> ds.assign_attrs(title="My Dataset", institution="DKRZ")
+        >>> ds.assign_attrs(experiment="historical")
+        
+        Notes
+        -----
+        This is equivalent to `set_global_attrs()` but follows xarray's API
+        convention and returns self for method chaining.
+        """
+        self.attrs.update(kwargs)
+        return self
 
     def add_dim(self, name, size):
         """
