@@ -235,7 +235,7 @@ attrs:
 ## Running Examples
 
 ```bash
-python example.py
+pixi run example
 ```
 
 This will run through all the example use cases including:
@@ -246,6 +246,51 @@ This will run through all the example use cases including:
 - Conversion to xarray
 - Writing to Zarr
 - Loading from YAML
+
+## Development
+
+### Code Quality Tools
+
+The project uses pixi for managing development tasks:
+
+```bash
+# Format code (applies black and isort)
+pixi run format
+
+# Check formatting without modifying files
+pixi run check-format
+
+# Run linters (flake8 for Python, markdownlint for Markdown)
+pixi run lint
+
+# Run all checks (format check + lint)
+pixi run check
+
+# Run tests
+pixi run test
+```
+
+### Individual Tools
+
+```bash
+# Format Python code with black
+pixi run format-python
+
+# Sort imports with isort
+pixi run format-imports
+
+# Lint Python code with flake8
+pixi run lint-python
+
+# Lint Markdown files
+pixi run lint-markdown
+```
+
+### Configuration Files
+
+- `.flake8` - Flake8 linting configuration
+- `pyproject.toml` - Black and isort configuration
+- `.markdownlint-cli2.yaml` - Markdown linting rules
 
 ## Use Cases
 
@@ -269,16 +314,19 @@ Catch dimension mismatches and missing coordinates early, before expensive data 
 ### DummyDataset
 
 **Methods:**
-- `set_global_attrs(**kwargs)` - Set global dataset attributes
+- `assign_attrs(**kwargs)` - Set global attributes (xarray-compatible, returns self)
+- `set_global_attrs(**kwargs)` - Set global dataset attributes (legacy)
 - `add_dim(name, size)` - Add a dimension
 - `add_coord(name, dims, attrs, data, encoding)` - Add a coordinate variable
 - `add_variable(name, dims, attrs, data, encoding)` - Add a data variable
+- `populate_with_random_data(seed=None)` - Fill with meaningful random data
 - `validate(strict_coords=False)` - Validate dataset structure
 - `to_dict()` - Export to dictionary
 - `to_json(**kwargs)` - Export to JSON string
 - `to_yaml()` - Export to YAML string
 - `save_yaml(path)` - Save specification to YAML file
 - `load_yaml(path)` - Load specification from YAML file (class method)
+- `from_xarray(xr_ds, include_data=True)` - Create from xarray.Dataset (class method)
 - `to_xarray(validate=True)` - Convert to xarray.Dataset
 - `to_zarr(store_path, mode='w', validate=True)` - Write to Zarr format
 
@@ -289,6 +337,11 @@ Represents a single variable or coordinate with:
 - `attrs` - Metadata dictionary
 - `data` - Optional numpy array
 - `encoding` - Encoding parameters (dtype, chunks, compressor, etc.)
+
+**Methods:**
+- `assign_attrs(**kwargs)` - Set attributes (xarray-compatible, returns self)
+- `infer_dims_from_data()` - Infer dimension names from data shape
+- `to_dict()` - Export to dictionary
 
 ## Future Extensions
 

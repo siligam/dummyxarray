@@ -16,6 +16,11 @@ mkdocs = ">=1.5.0"
 mkdocs-material = ">=9.0.0"
 mkdocstrings = ">=0.24.0"
 mkdocstrings-python = ">=1.7.0"
+# Linting and formatting
+black = ">=24.0.0"
+isort = ">=5.13.0"
+flake8 = ">=7.0.0"
+markdownlint-cli2 = ">=0.12.0"
 
 [tasks]
 test = "PYTHONPATH=src pytest tests/ -v"
@@ -25,6 +30,24 @@ ipython = "PYTHONPATH=src ipython"
 docs-serve = "mkdocs serve"
 docs-build = "mkdocs build"
 docs-deploy = "mkdocs gh-deploy"
+
+# Formatting tasks
+format = { depends-on = ["format-python", "format-imports"] }
+format-python = "black src/ tests/ *.py"
+format-imports = "isort src/ tests/ *.py"
+
+# Linting tasks
+lint = { depends-on = ["lint-python", "lint-markdown"] }
+lint-python = "flake8 src/ tests/ *.py"
+lint-markdown = "markdownlint-cli2 '**/*.md' '#node_modules'"
+
+# Check formatting without modifying files
+check-format = { depends-on = ["check-format-python", "check-format-imports"] }
+check-format-python = "black --check src/ tests/ *.py"
+check-format-imports = "isort --check-only src/ tests/ *.py"
+
+# Run all checks (format check + lint)
+check = { depends-on = ["check-format", "lint"] }
 
 [activation]
 scripts = ["activation.sh"]
