@@ -48,6 +48,8 @@ htmlcov/
 *.nc
 dataset_spec.yaml
 example_output.zarr/
+dataset_recipe.json
+dataset_recipe.py
 
 # MkDocs
 site/

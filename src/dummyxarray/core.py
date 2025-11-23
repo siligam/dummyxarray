@@ -19,7 +19,7 @@ import numpy as np
 class DummyArray:
     """Represents a single array (variable or coordinate) with metadata."""
     
-    def __init__(self, dims=None, attrs=None, data=None, encoding=None):
+    def __init__(self, dims=None, attrs=None, data=None, encoding=None, _record_history=True):
         """
         Initialize a DummyArray.
         
@@ -33,11 +33,28 @@ class DummyArray:
             Data array (numpy array or list)
         encoding : dict, optional
             Encoding parameters (dtype, chunks, compressor, fill_value, etc.)
+        _record_history : bool, optional
+            Whether to record operation history (default: True)
         """
         self.dims = dims
         self.attrs = attrs or {}
         self.data = data
         self.encoding = encoding or {}
+        
+        # Operation history tracking
+        self._history = [] if _record_history else None
+        if _record_history:
+            # Record initialization
+            init_args = {}
+            if dims is not None:
+                init_args['dims'] = dims
+            if attrs:
+                init_args['attrs'] = attrs
+            if data is not None:
+                init_args['data'] = '<data>'  # Don't store actual data
+            if encoding:
+                init_args['encoding'] = encoding
+            self._record_operation('__init__', init_args)
 
     def __repr__(self):
         """Return a string representation of the DummyArray."""
@@ -99,6 +116,84 @@ class DummyArray:
             return dict(zip(self.dims, shape))
         return {}
 
+    def _record_operation(self, func_name, args):
+        """
+        Record an operation in the history.
+        
+        Parameters
+        ----------
+        func_name : str
+            Name of the function/method called
+        args : dict
+            Arguments passed to the function
+        """
+        if self._history is not None:
+            self._history.append({
+                'func': func_name,
+                'args': args
+            })
+    
+    def get_history(self):
+        """
+        Get the operation history for this array.
+        
+        Returns
+        -------
+        list of dict
+            List of operations, each with 'func' and 'args' keys
+            
+        Examples
+        --------
+        >>> arr = DummyArray(dims=["time"])
+        >>> arr.assign_attrs(units="K")
+        >>> arr.get_history()
+        [{'func': '__init__', 'args': {'dims': ['time']}},
+         {'func': 'assign_attrs', 'args': {'units': 'K'}}]
+        """
+        return self._history.copy() if self._history is not None else []
+    
+    def replay_history(self, history=None):
+        """
+        Replay a sequence of operations to recreate an array.
+        
+        Parameters
+        ----------
+        history : list of dict, optional
+            History to replay. If None, uses this array's history.
+            
+        Returns
+        -------
+        DummyArray
+            New array with operations replayed
+            
+        Examples
+        --------
+        >>> arr = DummyArray(dims=["time"])
+        >>> arr.assign_attrs(units="K")
+        >>> history = arr.get_history()
+        >>> new_arr = DummyArray.replay_history(history)
+        """
+        if history is None:
+            history = self.get_history()
+        
+        # Find __init__ operation
+        init_op = next((op for op in history if op['func'] == '__init__'), None)
+        if init_op:
+            arr = DummyArray(**init_op['args'], _record_history=False)
+        else:
+            arr = DummyArray(_record_history=False)
+        
+        # Replay other operations
+        for op in history:
+            if op['func'] == '__init__':
+                continue
+            
+            func = getattr(arr, op['func'], None)
+            if func and callable(func):
+                func(**op['args'])
+        
+        return arr
+
     def assign_attrs(self, **kwargs):
         """
         Assign new attributes to this array (xarray-compatible API).
@@ -121,6 +216,7 @@ class DummyArray:
         >>> arr.assign_attrs(units="K", long_name="Temperature")
         >>> arr.assign_attrs(standard_name="air_temperature")
         """
+        self._record_operation('assign_attrs', kwargs)
         self.attrs.update(kwargs)
         return self
     
@@ -150,12 +246,24 @@ class DummyDataset:
     creating the actual xarray.Dataset with real data.
     """
     
-    def __init__(self):
-        """Initialize an empty DummyDataset."""
+    def __init__(self, _record_history=True):
+        """
+        Initialize an empty DummyDataset.
+        
+        Parameters
+        ----------
+        _record_history : bool, optional
+            Whether to record operation history (default: True)
+        """
         self.dims = {}        # dim_name → size
         self.coords = {}      # coord_name → DummyArray
         self.variables = {}   # var_name  → DummyArray
         self.attrs = {}       # global attributes
+        
+        # Operation history tracking
+        self._history = [] if _record_history else None
+        if _record_history:
+            self._record_operation('__init__', {})
 
     def __repr__(self):
         """Return a string representation similar to xarray.Dataset."""
@@ -237,7 +345,7 @@ class DummyDataset:
         For other names, this could be extended to allow setting coords/variables.
         """
         # Internal attributes that should be set normally
-        if name in ('dims', 'coords', 'variables', 'attrs'):
+        if name in ('dims', 'coords', 'variables', 'attrs', '_history'):
             object.__setattr__(self, name, value)
         else:
             # For now, raise an error to avoid confusion
@@ -257,6 +365,131 @@ class DummyDataset:
         default_attrs = set(object.__dir__(self))
         # Add coordinate and variable names
         return sorted(default_attrs | set(self.coords.keys()) | set(self.variables.keys()))
+
+    # ------------------------------------------------------------
+    # Operation History Tracking
+    # ------------------------------------------------------------
+    
+    def _record_operation(self, func_name, args):
+        """
+        Record an operation in the history.
+        
+        Parameters
+        ----------
+        func_name : str
+            Name of the function/method called
+        args : dict
+            Arguments passed to the function
+        """
+        if self._history is not None:
+            self._history.append({
+                'func': func_name,
+                'args': args
+            })
+    
+    def get_history(self):
+        """
+        Get the operation history for this dataset.
+        
+        Returns
+        -------
+        list of dict
+            List of operations, each with 'func' and 'args' keys
+            
+        Examples
+        --------
+        >>> ds = DummyDataset()
+        >>> ds.add_dim("time", 10)
+        >>> ds.assign_attrs(title="Test")
+        >>> ds.get_history()
+        [{'func': '__init__', 'args': {}},
+         {'func': 'add_dim', 'args': {'name': 'time', 'size': 10}},
+         {'func': 'assign_attrs', 'args': {'title': 'Test'}}]
+        """
+        return self._history.copy() if self._history is not None else []
+    
+    def export_history(self, format='json'):
+        """
+        Export the operation history in a serializable format.
+        
+        Parameters
+        ----------
+        format : str, optional
+            Export format: 'json', 'yaml', or 'python' (default: 'json')
+            
+        Returns
+        -------
+        str
+            Serialized history
+            
+        Examples
+        --------
+        >>> ds = DummyDataset()
+        >>> ds.add_dim("time", 10)
+        >>> print(ds.export_history('python'))
+        ds = DummyDataset()
+        ds.add_dim(name='time', size=10)
+        """
+        history = self.get_history()
+        
+        if format == 'json':
+            return json.dumps(history, indent=2)
+        elif format == 'yaml':
+            return yaml.dump(history, default_flow_style=False)
+        elif format == 'python':
+            lines = []
+            for op in history:
+                if op['func'] == '__init__':
+                    lines.append("ds = DummyDataset()")
+                else:
+                    args_str = ', '.join(f"{k}={repr(v)}" for k, v in op['args'].items())
+                    lines.append(f"ds.{op['func']}({args_str})")
+            return '\n'.join(lines)
+        else:
+            raise ValueError(f"Unknown format: {format}. Use 'json', 'yaml', or 'python'")
+    
+    @classmethod
+    def replay_history(cls, history):
+        """
+        Replay a sequence of operations to recreate a dataset.
+        
+        Parameters
+        ----------
+        history : list of dict or str
+            History to replay. Can be a list of operations or a JSON/YAML string.
+            
+        Returns
+        -------
+        DummyDataset
+            New dataset with operations replayed
+            
+        Examples
+        --------
+        >>> ds = DummyDataset()
+        >>> ds.add_dim("time", 10)
+        >>> history = ds.get_history()
+        >>> new_ds = DummyDataset.replay_history(history)
+        """
+        # Parse history if it's a string
+        if isinstance(history, str):
+            try:
+                history = json.loads(history)
+            except json.JSONDecodeError:
+                history = yaml.safe_load(history)
+        
+        # Create new dataset without recording
+        ds = cls(_record_history=False)
+        
+        # Replay operations (skip __init__)
+        for op in history:
+            if op['func'] == '__init__':
+                continue
+            
+            func = getattr(ds, op['func'], None)
+            if func and callable(func):
+                func(**op['args'])
+        
+        return ds
 
     # ------------------------------------------------------------
     # Core API
@@ -305,6 +538,7 @@ class DummyDataset:
         This is equivalent to `set_global_attrs()` but follows xarray's API
         convention and returns self for method chaining.
         """
+        self._record_operation('assign_attrs', kwargs)
         self.attrs.update(kwargs)
         return self
 
@@ -319,6 +553,7 @@ class DummyDataset:
         size : int
             Dimension size
         """
+        self._record_operation('add_dim', {'name': name, 'size': size})
         self.dims[name] = size
 
     def add_coord(self, name, dims=None, attrs=None, data=None, encoding=None):
@@ -338,7 +573,19 @@ class DummyDataset:
         encoding : dict, optional
             Encoding parameters
         """
-        arr = DummyArray(dims, attrs, data, encoding)
+        # Record operation (don't store actual data)
+        args = {'name': name}
+        if dims is not None:
+            args['dims'] = dims
+        if attrs:
+            args['attrs'] = attrs
+        if data is not None:
+            args['data'] = '<data>'
+        if encoding:
+            args['encoding'] = encoding
+        self._record_operation('add_coord', args)
+        
+        arr = DummyArray(dims, attrs, data, encoding, _record_history=False)
         self._infer_and_register_dims(arr)
         self.coords[name] = arr
 
@@ -359,7 +606,19 @@ class DummyDataset:
         encoding : dict, optional
             Encoding parameters (dtype, chunks, compressor, fill_value, etc.)
         """
-        arr = DummyArray(dims, attrs, data, encoding)
+        # Record operation (don't store actual data)
+        args = {'name': name}
+        if dims is not None:
+            args['dims'] = dims
+        if attrs:
+            args['attrs'] = attrs
+        if data is not None:
+            args['data'] = '<data>'
+        if encoding:
+            args['encoding'] = encoding
+        self._record_operation('add_variable', args)
+        
+        arr = DummyArray(dims, attrs, data, encoding, _record_history=False)
         self._infer_and_register_dims(arr)
         self.variables[name] = arr
 

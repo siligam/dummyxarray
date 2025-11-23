@@ -16,13 +16,13 @@ A lightweight xarray-like object for building dataset metadata specifications be
 ✅ **Rich repr for interactive exploration** (DummyDataset and DummyArray)  
 ✅ **Populate with random but meaningful data** (for testing)  
 ✅ **Create from existing xarray.Dataset** (extract metadata)  
-✅ **Create from YAML specifications**  
-✅ **Export to YAML/JSON for documentation**  
-✅ **Save/load specifications from YAML files**  
-✅ **Support for encoding** (dtype, chunks, compression)  
-✅ **Dataset validation** (dimension checks, shape matching)  
-✅ **Convert to real xarray.Dataset**  
-✅ **Write directly to Zarr format**
+✅ **Operation history tracking** (record, export, and replay operations)  
+✅ **CF-compliant metadata** (units, long_name, standard_name)  
+✅ **Encoding specifications** (dtype, chunks, compression)  
+✅ **Validation** (dimension consistency, coordinate checks)  
+✅ **Export to YAML/JSON** (human-readable specifications)  
+✅ **Convert to xarray.Dataset** (when ready for real data)  
+✅ **Write directly to Zarr** (with optimal chunking and compression)
 
 ## Installation
 
@@ -188,7 +188,37 @@ ds.temperature.attrs["cell_methods"] = "time: mean"
 print(ds.time)             # Shows dimensions, shape, dtype, data, attrs
 ```
 
-### 10. Save/Load Specifications
+### 10. Operation History Tracking
+
+```python
+# All operations are automatically recorded
+ds = DummyDataset()
+ds.add_dim("time", 10)
+ds.assign_attrs(title="Test Dataset")
+
+# Get the operation history
+history = ds.get_history()
+# [{'func': '__init__', 'args': {}},
+#  {'func': 'add_dim', 'args': {'name': 'time', 'size': 10}},
+#  {'func': 'assign_attrs', 'args': {'title': 'Test Dataset'}}]
+
+# Export history as executable Python code
+python_code = ds.export_history('python')
+# ds = DummyDataset()
+# ds.add_dim(name='time', size=10)
+# ds.assign_attrs(title='Test Dataset')
+
+# Export as JSON or YAML
+json_history = ds.export_history('json')
+yaml_history = ds.export_history('yaml')
+
+# Replay history to recreate the dataset
+new_ds = DummyDataset.replay_history(history)
+# or from JSON/YAML string
+new_ds = DummyDataset.replay_history(json_history)
+```
+
+### 11. Save/Load Specifications
 
 ```python
 # Save the dataset structure to YAML
@@ -314,6 +344,9 @@ Define chunking and compression strategies, then write directly to Zarr with opt
 ### 5. **Metadata Validation**
 Catch dimension mismatches and missing coordinates early, before expensive data operations.
 
+### 6. **Reproducible Workflows**
+Record all operations as a history, export as Python code, JSON, or YAML, and replay to recreate datasets. Perfect for documentation, version control, and sharing dataset specifications.
+
 ## API Reference
 
 ### DummyDataset
@@ -326,6 +359,9 @@ Catch dimension mismatches and missing coordinates early, before expensive data 
 - `add_variable(name, dims, attrs, data, encoding)` - Add a data variable
 - `populate_with_random_data(seed=None)` - Fill with meaningful random data
 - `validate(strict_coords=False)` - Validate dataset structure
+- `get_history()` - Get list of recorded operations
+- `export_history(format='json')` - Export history as JSON, YAML, or Python code
+- `replay_history(history)` - Recreate dataset from operation history (class method)
 - `to_dict()` - Export to dictionary
 - `to_json(**kwargs)` - Export to JSON string
 - `to_yaml()` - Export to YAML string
@@ -345,6 +381,8 @@ Represents a single variable or coordinate with:
 
 **Methods:**
 - `assign_attrs(**kwargs)` - Set attributes (xarray-compatible, returns self)
+- `get_history()` - Get list of recorded operations
+- `replay_history(history)` - Recreate array from operation history
 - `infer_dims_from_data()` - Infer dimension names from data shape
 - `to_dict()` - Export to dictionary
 
