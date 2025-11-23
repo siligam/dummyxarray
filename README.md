@@ -216,6 +216,28 @@ yaml_history = ds.export_history('yaml')
 new_ds = DummyDataset.replay_history(history)
 # or from JSON/YAML string
 new_ds = DummyDataset.replay_history(json_history)
+
+# Visualize the operation history
+print(ds.visualize_history(format='text'))
+# Dataset Construction History
+# ============================
+# 1. __init__()
+# 2. add_dim(name='time', size=10)
+# 3. assign_attrs(title='Test Dataset')
+# Summary:
+#   Total operations: 3
+#   Operation breakdown:
+#     __init__: 1
+#     add_dim: 1
+#     assign_attrs: 1
+
+# Export as DOT format for Graphviz
+dot_graph = ds.visualize_history(format='dot')
+# Can be rendered with: dot -Tpng graph.dot -o graph.png
+
+# Export as Mermaid diagram for documentation
+mermaid_diagram = ds.visualize_history(format='mermaid')
+# Works in GitHub, GitLab, and documentation tools
 ```
 
 ### 11. Save/Load Specifications
@@ -361,6 +383,7 @@ Record all operations as a history, export as Python code, JSON, or YAML, and re
 - `validate(strict_coords=False)` - Validate dataset structure
 - `get_history()` - Get list of recorded operations
 - `export_history(format='json')` - Export history as JSON, YAML, or Python code
+- `visualize_history(format='text', **kwargs)` - Visualize history as text, DOT, or Mermaid
 - `replay_history(history)` - Recreate dataset from operation history (class method)
 - `to_dict()` - Export to dictionary
 - `to_json(**kwargs)` - Export to JSON string

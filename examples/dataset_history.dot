@@ -1,0 +1,24 @@
+digraph dataset_history {
+  rankdir=TB;
+  node [shape=box, style=rounded];
+
+  op0 [label="__init__", fillcolor="lightblue", style=filled];
+  op1 [label="add_dim\nname='time'\nsize=365", fillcolor="lightgreen", style=filled];
+  op2 [label="add_dim\nname='lat'\nsize=90", fillcolor="lightgreen", style=filled];
+  op3 [label="add_dim\nname='lon'\nsize=180", fillcolor="lightgreen", style=filled];
+  op4 [label="add_coord\nname='time'\ndims=['time']\nattrs={'units': 'days since 2020-01-01'}", fillcolor="lightyellow", style=filled];
+  op5 [label="add_coord\nname='lat'\ndims=['lat']\nattrs={'units': 'degrees_north'}", fillcolor="lightyellow", style=filled];
+  op6 [label="add_coord\nname='lon'\ndims=['lon']\nattrs={'units': 'degrees_east'}", fillcolor="lightyellow", style=filled];
+  op7 [label="add_variable\nname='tas'\ndims=['time', 'lat', 'lon']\nattrs={'units': 'K', 'long_name': 'Near-Surface Air Temperature'}\n...", fillcolor="lightcoral", style=filled];
+  op8 [label="add_variable\nname='pr'\ndims=['time', 'lat', 'lon']\nattrs={'units': 'kg m-2 s-1', 'long_name': 'Precipitation'}\n...", fillcolor="lightcoral", style=filled];
+  op9 [label="assign_attrs\ntitle='Climate Model Output'\ninstitution='DKRZ'\nexperiment='historical'\n...", fillcolor="lavender", style=filled];
+  op0 -> op1;
+  op1 -> op2;
+  op2 -> op3;
+  op3 -> op4;
+  op4 -> op5;
+  op5 -> op6;
+  op6 -> op7;
+  op7 -> op8;
+  op8 -> op9;
+}

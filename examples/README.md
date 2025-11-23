@@ -61,6 +61,17 @@ Demonstrates operation history tracking for reproducible workflows:
 
 **Run:** `pixi run python examples/example_history.py`
 
+### `example_visualize.py`
+
+Shows how to visualize operation history in multiple formats:
+- Text visualization (detailed, compact, no-args)
+- DOT/Graphviz format for rendering graphs
+- Mermaid diagrams for documentation
+- Operation statistics and breakdowns
+- Use cases for debugging and documentation
+
+**Run:** `pixi run python examples/example_visualize.py`
+
 ## Output Files
 
 Examples may generate output files in this directory:

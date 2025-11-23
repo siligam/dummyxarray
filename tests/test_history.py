@@ -258,3 +258,153 @@ class TestDummyDatasetHistory:
         assert created_ds.dims == ds.dims
         assert created_ds.attrs == ds.attrs
         assert list(created_ds.coords.keys()) == list(ds.coords.keys())
+
+
+class TestHistoryVisualization:
+    """Test history visualization functionality."""
+
+    def test_visualize_text_basic(self):
+        """Test basic text visualization."""
+        ds = DummyDataset()
+        ds.add_dim("time", 10)
+        ds.assign_attrs(title="Test")
+
+        viz = ds.visualize_history(format="text")
+
+        assert "Dataset Construction History" in viz
+        assert "__init__()" in viz
+        assert "add_dim" in viz
+        assert "assign_attrs" in viz
+        assert "Summary:" in viz
+        assert "Total operations: 3" in viz
+
+    def test_visualize_text_compact(self):
+        """Test compact text visualization."""
+        ds = DummyDataset()
+        ds.add_dim("time", 10)
+        ds.add_dim("lat", 64)
+
+        viz = ds.visualize_history(format="text", compact=True)
+
+        assert "Dataset Construction History" not in viz
+        assert "Summary:" not in viz
+        assert "1. __init__()" in viz
+        assert "2. add_dim" in viz
+        assert "3. add_dim" in viz
+
+    def test_visualize_text_no_args(self):
+        """Test text visualization without arguments."""
+        ds = DummyDataset()
+        ds.add_dim("time", 10)
+
+        viz = ds.visualize_history(format="text", show_args=False)
+
+        assert "add_dim()" in viz
+        assert "name=" not in viz
+        assert "size=" not in viz
+
+    def test_visualize_dot(self):
+        """Test DOT format visualization."""
+        ds = DummyDataset()
+        ds.add_dim("time", 10)
+        ds.add_coord("time", dims=["time"])
+
+        viz = ds.visualize_history(format="dot")
+
+        assert "digraph dataset_history" in viz
+        assert "rankdir=TB" in viz
+        assert "op0" in viz
+        assert "op1" in viz
+        assert "op2" in viz
+        assert "->" in viz
+        assert "fillcolor=" in viz
+
+    def test_visualize_dot_colors(self):
+        """Test that DOT visualization uses different colors for operations."""
+        ds = DummyDataset()
+        ds.add_dim("time", 10)
+        ds.add_coord("time", dims=["time"])
+        ds.add_variable("temp", dims=["time"])
+
+        viz = ds.visualize_history(format="dot")
+
+        # Check that different colors are used
+        assert "lightblue" in viz  # __init__
+        assert "lightgreen" in viz  # add_dim
+        assert "lightyellow" in viz  # add_coord
+        assert "lightcoral" in viz  # add_variable
+
+    def test_visualize_mermaid(self):
+        """Test Mermaid format visualization."""
+        ds = DummyDataset()
+        ds.add_dim("time", 10)
+        ds.add_coord("time", dims=["time"])
+
+        viz = ds.visualize_history(format="mermaid")
+
+        assert "graph TD" in viz
+        assert "op0" in viz
+        assert "op1" in viz
+        assert "op2" in viz
+        assert "-->" in viz
+
+    def test_visualize_mermaid_shapes(self):
+        """Test that Mermaid uses different shapes for different operations."""
+        ds = DummyDataset()
+        ds.add_dim("time", 10)
+        ds.add_coord("time", dims=["time"])
+
+        viz = ds.visualize_history(format="mermaid")
+
+        # __init__ uses square brackets
+        assert 'op0["__init__"]' in viz
+        # add_dim uses parentheses (rounded)
+        assert 'op1("add_dim' in viz
+
+    def test_visualize_empty_history(self):
+        """Test visualization with no history."""
+        ds = DummyDataset(_record_history=False)
+
+        viz = ds.visualize_history(format="text")
+        assert viz == "No operations recorded"
+
+    def test_visualize_invalid_format(self):
+        """Test that invalid format raises error."""
+        ds = DummyDataset()
+
+        with pytest.raises(ValueError, match="Unknown format"):
+            ds.visualize_history(format="invalid")
+
+    def test_visualize_complex_workflow(self):
+        """Test visualization of a complex workflow."""
+        ds = DummyDataset()
+        ds.add_dim("time", 12)
+        ds.add_dim("lat", 180)
+        ds.add_dim("lon", 360)
+        ds.add_coord("time", dims=["time"], attrs={"units": "days"})
+        ds.add_coord("lat", dims=["lat"], attrs={"units": "degrees_north"})
+        ds.add_coord("lon", dims=["lon"], attrs={"units": "degrees_east"})
+        ds.add_variable("temperature", dims=["time", "lat", "lon"], attrs={"units": "K"})
+        ds.assign_attrs(title="Climate Data", institution="DKRZ")
+
+        viz = ds.visualize_history(format="text")
+
+        assert "Total operations: 9" in viz
+        assert "add_dim: 3" in viz
+        assert "add_coord: 3" in viz
+        assert "add_variable: 1" in viz
+        assert "assign_attrs: 1" in viz
+
+    def test_visualize_operation_breakdown(self):
+        """Test that operation breakdown is correct."""
+        ds = DummyDataset()
+        ds.add_dim("time", 10)
+        ds.add_dim("lat", 64)
+        ds.add_dim("lon", 128)
+        ds.assign_attrs(title="Test")
+        ds.assign_attrs(institution="DKRZ")
+
+        viz = ds.visualize_history(format="text")
+
+        assert "add_dim: 3" in viz
+        assert "assign_attrs: 2" in viz

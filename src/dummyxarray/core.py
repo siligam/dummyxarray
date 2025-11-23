@@ -486,6 +486,160 @@ class DummyDataset:
 
         return ds
 
+    def visualize_history(self, format="text", **kwargs):
+        """
+        Visualize the operation history.
+
+        Parameters
+        ----------
+        format : str, optional
+            Visualization format: 'text', 'dot', 'mermaid' (default: 'text')
+        **kwargs
+            Additional arguments for specific formats:
+            - show_args : bool - Show operation arguments (default: True)
+            - compact : bool - Use compact representation (default: False)
+
+        Returns
+        -------
+        str
+            Formatted visualization string
+
+        Examples
+        --------
+        >>> ds = DummyDataset()
+        >>> ds.add_dim("time", 10)
+        >>> ds.add_coord("time", dims=["time"])
+        >>> print(ds.visualize_history())
+        Dataset Construction History
+        ============================
+        1. __init__()
+        2. add_dim(name='time', size=10)
+        3. add_coord(name='time', dims=['time'])
+
+        >>> print(ds.visualize_history(format='dot'))
+        digraph dataset_history { ... }
+        """
+        history = self.get_history()
+        show_args = kwargs.get("show_args", True)
+        compact = kwargs.get("compact", False)
+
+        if format == "text":
+            return self._visualize_text(history, show_args, compact)
+        elif format == "dot":
+            return self._visualize_dot(history, show_args)
+        elif format == "mermaid":
+            return self._visualize_mermaid(history, show_args)
+        else:
+            raise ValueError(f"Unknown format: {format}. Use 'text', 'dot', or 'mermaid'")
+
+    def _visualize_text(self, history, show_args=True, compact=False):
+        """Create a text-based visualization of the history."""
+        if not history:
+            return "No operations recorded"
+
+        if compact:
+            lines = []
+            for i, op in enumerate(history, 1):
+                if show_args and op["args"]:
+                    args_str = ", ".join(f"{k}={repr(v)}" for k, v in op["args"].items())
+                    lines.append(f"{i}. {op['func']}({args_str})")
+                else:
+                    lines.append(f"{i}. {op['func']}()")
+            return "\n".join(lines)
+        else:
+            lines = ["Dataset Construction History", "=" * 28, ""]
+
+            for i, op in enumerate(history, 1):
+                if show_args and op["args"]:
+                    args_str = ", ".join(f"{k}={repr(v)}" for k, v in op["args"].items())
+                    lines.append(f"{i}. {op['func']}({args_str})")
+                else:
+                    lines.append(f"{i}. {op['func']}()")
+
+            # Add summary
+            lines.append("")
+            lines.append("Summary:")
+            lines.append(f"  Total operations: {len(history)}")
+
+            # Count operation types
+            op_counts = {}
+            for op in history:
+                op_counts[op["func"]] = op_counts.get(op["func"], 0) + 1
+
+            lines.append("  Operation breakdown:")
+            for func, count in sorted(op_counts.items()):
+                lines.append(f"    {func}: {count}")
+
+            return "\n".join(lines)
+
+    def _visualize_dot(self, history, show_args=True):
+        """Create a Graphviz DOT format visualization."""
+        lines = [
+            "digraph dataset_history {",
+            "  rankdir=TB;",
+            "  node [shape=box, style=rounded];",
+            "",
+        ]
+
+        # Create nodes for each operation
+        for i, op in enumerate(history):
+            label = op["func"]
+            if show_args and op["args"]:
+                args_str = "\\n".join(f"{k}={repr(v)}" for k, v in list(op["args"].items())[:3])
+                if len(op["args"]) > 3:
+                    args_str += "\\n..."
+                label = f"{label}\\n{args_str}"
+
+            # Color code by operation type
+            color = self._get_operation_color(op["func"])
+            lines.append(f'  op{i} [label="{label}", fillcolor="{color}", style=filled];')
+
+        # Create edges
+        for i in range(len(history) - 1):
+            lines.append(f"  op{i} -> op{i+1};")
+
+        lines.append("}")
+        return "\n".join(lines)
+
+    def _visualize_mermaid(self, history, show_args=True):
+        """Create a Mermaid diagram visualization."""
+        lines = ["graph TD"]
+
+        # Create nodes for each operation
+        for i, op in enumerate(history):
+            label = op["func"]
+            if show_args and op["args"]:
+                args_str = "<br/>".join(f"{k}={repr(v)}" for k, v in list(op["args"].items())[:2])
+                if len(op["args"]) > 2:
+                    args_str += "<br/>..."
+                label = f"{label}<br/>{args_str}"
+
+            # Use different shapes for different operations
+            if op["func"] == "__init__":
+                lines.append(f'  op{i}["{label}"]')
+            elif op["func"].startswith("add_"):
+                lines.append(f'  op{i}("{label}")')
+            else:
+                lines.append(f'  op{i}["{label}"]')
+
+        # Create edges
+        for i in range(len(history) - 1):
+            lines.append(f"  op{i} --> op{i+1}")
+
+        return "\n".join(lines)
+
+    def _get_operation_color(self, func_name):
+        """Get color for operation type."""
+        color_map = {
+            "__init__": "lightblue",
+            "add_dim": "lightgreen",
+            "add_coord": "lightyellow",
+            "add_variable": "lightcoral",
+            "assign_attrs": "lavender",
+            "populate_with_random_data": "lightpink",
+        }
+        return color_map.get(func_name, "lightgray")
+
     # ------------------------------------------------------------
     # Core API
     # ------------------------------------------------------------

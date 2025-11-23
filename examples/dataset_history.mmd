@@ -1,0 +1,20 @@
+graph TD
+  op0["__init__"]
+  op1("add_dim<br/>name='time'<br/>size=365")
+  op2("add_dim<br/>name='lat'<br/>size=90")
+  op3("add_dim<br/>name='lon'<br/>size=180")
+  op4("add_coord<br/>name='time'<br/>dims=['time']<br/>...")
+  op5("add_coord<br/>name='lat'<br/>dims=['lat']<br/>...")
+  op6("add_coord<br/>name='lon'<br/>dims=['lon']<br/>...")
+  op7("add_variable<br/>name='tas'<br/>dims=['time', 'lat', 'lon']<br/>...")
+  op8("add_variable<br/>name='pr'<br/>dims=['time', 'lat', 'lon']<br/>...")
+  op9["assign_attrs<br/>title='Climate Model Output'<br/>institution='DKRZ'<br/>..."]
+  op0 --> op1
+  op1 --> op2
+  op2 --> op3
+  op3 --> op4
+  op4 --> op5
+  op5 --> op6
+  op6 --> op7
+  op7 --> op8
+  op8 --> op9
