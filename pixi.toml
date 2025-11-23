@@ -20,6 +20,11 @@ mkdocstrings-python = ">=1.7.0"
 [tasks]
 test = "PYTHONPATH=src pytest tests/ -v"
 example = "PYTHONPATH=src python example.py"
+python = "PYTHONPATH=src python"
+ipython = "PYTHONPATH=src ipython"
 docs-serve = "mkdocs serve"
 docs-build = "mkdocs build"
 docs-deploy = "mkdocs gh-deploy"
+
+[activation]
+scripts = ["activation.sh"]

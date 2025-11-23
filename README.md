@@ -7,6 +7,9 @@ A lightweight xarray-like object for building dataset metadata specifications be
 ✅ **Define dimensions and their sizes**  
 ✅ **Add variables and coordinates with metadata**  
 ✅ **Automatic dimension inference from data**  
+✅ **xarray-style attribute access** (`ds.time`, `ds.temperature`)  
+✅ **Rich repr for interactive exploration** (DummyDataset and DummyArray)  
+✅ **Populate with random but meaningful data** (for testing)  
 ✅ **Create from existing xarray.Dataset** (extract metadata)  
 ✅ **Create from YAML specifications**  
 ✅ **Export to YAML/JSON for documentation**  
@@ -144,7 +147,40 @@ dummy_ds = DummyDataset.from_xarray(existing_ds, include_data=False)
 dummy_ds.save_yaml("template.yaml")
 ```
 
-### 8. Save/Load Specifications
+### 8. Populate with Random Data
+
+```python
+# Create structure without data
+ds = DummyDataset()
+ds.add_dim("time", 10)
+ds.add_dim("lat", 5)
+ds.add_coord("lat", ["lat"], attrs={"units": "degrees_north"})
+ds.add_variable("temperature", ["time", "lat"], 
+                attrs={"units": "K", "standard_name": "air_temperature"})
+
+# Populate with meaningful random data
+ds.populate_with_random_data(seed=42)
+
+# Now has realistic data: temperature in Kelvin, lat from -90 to 90
+print(ds.variables["temperature"].data.mean())  # ~280 K
+```
+
+### 9. xarray-style Attribute Access
+
+```python
+# Access coordinates and variables as attributes (like xarray)
+ds.time                    # Same as ds.coords['time']
+ds.temperature             # Same as ds.variables['temperature']
+
+# Modify via attribute access
+ds.time.data = np.arange(10)
+ds.time.attrs["standard_name"] = "time"
+
+# Inspect with rich repr
+print(ds.time)             # Shows dimensions, shape, dtype, data, attrs
+```
+
+### 10. Save/Load Specifications
 
 ```python
 # Save the dataset structure to YAML
