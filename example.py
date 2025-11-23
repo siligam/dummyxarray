@@ -13,6 +13,7 @@ This script demonstrates the key features of the dummy xarray-like object:
 """
 
 import numpy as np
+
 from dummyxarray import DummyDataset
 
 
@@ -29,7 +30,7 @@ def example_basic_usage():
         title="Test Climate Dataset",
         institution="DKRZ",
         experiment="historical",
-        source="Example Model v1.0"
+        source="Example Model v1.0",
     )
 
     # Add dimensions
@@ -46,12 +47,10 @@ def example_basic_usage():
     ds.add_variable(
         "tas",
         ["time", "lat", "lon"],
-        attrs={"long_name": "Near-Surface Air Temperature", "units": "K"}
+        attrs={"long_name": "Near-Surface Air Temperature", "units": "K"},
     )
     ds.add_variable(
-        "pr",
-        ["time", "lat", "lon"],
-        attrs={"long_name": "Precipitation", "units": "kg m-2 s-1"}
+        "pr", ["time", "lat", "lon"], attrs={"long_name": "Precipitation", "units": "kg m-2 s-1"}
     )
 
     # Export to YAML
@@ -71,20 +70,13 @@ def example_auto_inference():
 
     ds = DummyDataset()
 
-    ds.set_global_attrs(
-        title="Auto-inferred Dataset",
-        institution="DKRZ"
-    )
+    ds.set_global_attrs(title="Auto-inferred Dataset", institution="DKRZ")
 
     # Create data with specific shape
     temp_data = np.random.rand(12, 64, 128)
 
     # Add variable with data - dimensions will be auto-inferred
-    ds.add_variable(
-        "tas",
-        data=temp_data,
-        attrs={"units": "K", "long_name": "air_temperature"}
-    )
+    ds.add_variable("tas", data=temp_data, attrs={"units": "K", "long_name": "air_temperature"})
 
     print("\nDimensions were automatically inferred:")
     print(f"  {ds.dims}")
@@ -115,7 +107,7 @@ def example_with_encoding():
         ["time"],
         data=time_data,
         attrs={"units": "days since 2000-01-01"},
-        encoding={"dtype": "int32"}
+        encoding={"dtype": "int32"},
     )
 
     lat_data = np.linspace(-90, 90, 64)
@@ -124,7 +116,7 @@ def example_with_encoding():
         ["lat"],
         data=lat_data,
         attrs={"units": "degrees_north"},
-        encoding={"dtype": "float32"}
+        encoding={"dtype": "float32"},
     )
 
     lon_data = np.linspace(-180, 180, 128)
@@ -133,7 +125,7 @@ def example_with_encoding():
         ["lon"],
         data=lon_data,
         attrs={"units": "degrees_east"},
-        encoding={"dtype": "float32"}
+        encoding={"dtype": "float32"},
     )
 
     # Add variable with data and encoding
@@ -147,7 +139,7 @@ def example_with_encoding():
             "dtype": "float32",
             "chunks": (6, 32, 64),
             "compressor": None,  # Can use zarr.Blosc() or similar
-        }
+        },
     )
 
     print("\nDataset with encoding:")
@@ -190,6 +182,7 @@ def example_to_zarr(ds):
 
         # Read it back with xarray
         import xarray as xr
+
         loaded = xr.open_zarr("example_output.zarr")
         print("\nLoaded back from Zarr:")
         print(loaded)
@@ -222,11 +215,7 @@ def example_validation_errors():
     ds = DummyDataset()
 
     # Add a variable with unknown dimension
-    ds.add_variable(
-        "bad_var",
-        dims=["unknown_dim"],
-        attrs={"units": "K"}
-    )
+    ds.add_variable("bad_var", dims=["unknown_dim"], attrs={"units": "K"})
 
     print("\nAttempting to validate dataset with unknown dimension...")
     try:

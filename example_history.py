@@ -22,16 +22,14 @@ ds.add_coord("time", dims=["time"], attrs={"units": "days since 2000-01-01"})
 ds.add_coord("lat", dims=["lat"], attrs={"units": "degrees_north"})
 ds.add_coord("lon", dims=["lon"], attrs={"units": "degrees_east"})
 
-ds.add_variable("temperature", 
-               dims=["time", "lat", "lon"],
-               attrs={"units": "K", "long_name": "Near-Surface Air Temperature"},
-               encoding={"dtype": "float32", "chunks": [6, 32, 64]})
-
-ds.assign_attrs(
-    title="Climate Model Output",
-    institution="DKRZ",
-    experiment="historical"
+ds.add_variable(
+    "temperature",
+    dims=["time", "lat", "lon"],
+    attrs={"units": "K", "long_name": "Near-Surface Air Temperature"},
+    encoding={"dtype": "float32", "chunks": [6, 32, 64]},
 )
+
+ds.assign_attrs(title="Climate Model Output", institution="DKRZ", experiment="historical")
 
 print(ds)
 
@@ -45,19 +43,19 @@ for i, op in enumerate(history[:5]):
 
 # Export history as JSON
 print("\n3. Exporting history as JSON...")
-json_history = ds.export_history('json')
+json_history = ds.export_history("json")
 print("JSON format (first 300 chars):")
 print(json_history[:300] + "...")
 
 # Export history as YAML
 print("\n4. Exporting history as YAML...")
-yaml_history = ds.export_history('yaml')
+yaml_history = ds.export_history("yaml")
 print("YAML format (first 300 chars):")
 print(yaml_history[:300] + "...")
 
 # Export history as Python code
 print("\n5. Exporting history as executable Python code...")
-python_code = ds.export_history('python')
+python_code = ds.export_history("python")
 print("Python code:")
 print("-" * 70)
 print(python_code)
@@ -85,9 +83,9 @@ print("Recreated from YAML - dimensions:", ds_from_yaml.dims)
 
 # Execute the Python code
 print("\n9. Executing the exported Python code...")
-namespace = {'DummyDataset': DummyDataset}
+namespace = {"DummyDataset": DummyDataset}
 exec(python_code, namespace)
-ds_from_code = namespace['ds']
+ds_from_code = namespace["ds"]
 print("Recreated from Python code - dimensions:", ds_from_code.dims)
 
 # Use case: Save history for reproducibility
