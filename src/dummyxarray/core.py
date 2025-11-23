@@ -368,9 +368,9 @@ class DummyDataset:
     # Operation History Tracking
     # ------------------------------------------------------------
 
-    def _record_operation(self, func_name, args):
+    def _record_operation(self, func_name, args, provenance=None):
         """
-        Record an operation in the history.
+        Record an operation in the history with provenance information.
 
         Parameters
         ----------
@@ -378,18 +378,32 @@ class DummyDataset:
             Name of the function/method called
         args : dict
             Arguments passed to the function
+        provenance : dict, optional
+            Provenance information capturing state changes:
+            - 'changes': dict of what changed (before -> after)
+            - 'added': list of items added
+            - 'removed': list of items removed
+            - 'modified': dict of items modified with before/after values
         """
         if self._history is not None:
-            self._history.append({"func": func_name, "args": args})
+            entry = {"func": func_name, "args": args}
+            if provenance:
+                entry["provenance"] = provenance
+            self._history.append(entry)
 
-    def get_history(self):
+    def get_history(self, include_provenance=True):
         """
         Get the operation history for this dataset.
+
+        Parameters
+        ----------
+        include_provenance : bool, optional
+            Whether to include provenance information (default: True)
 
         Returns
         -------
         list of dict
-            List of operations, each with 'func' and 'args' keys
+            List of operations, each with 'func', 'args', and optionally 'provenance' keys
 
         Examples
         --------
@@ -398,10 +412,19 @@ class DummyDataset:
         >>> ds.assign_attrs(title="Test")
         >>> ds.get_history()
         [{'func': '__init__', 'args': {}},
-         {'func': 'add_dim', 'args': {'name': 'time', 'size': 10}},
-         {'func': 'assign_attrs', 'args': {'title': 'Test'}}]
+         {'func': 'add_dim', 'args': {'name': 'time', 'size': 10},
+          'provenance': {'added': ['time']}},
+         {'func': 'assign_attrs', 'args': {'title': 'Test'},
+          'provenance': {'modified': {'title': {'before': None, 'after': 'Test'}}}}]
         """
-        return self._history.copy() if self._history is not None else []
+        if self._history is None:
+            return []
+
+        if include_provenance:
+            return self._history.copy()
+        else:
+            # Return history without provenance information
+            return [{"func": op["func"], "args": op["args"]} for op in self._history]
 
     def export_history(self, format="json"):
         """
@@ -640,6 +663,153 @@ class DummyDataset:
         }
         return color_map.get(func_name, "lightgray")
 
+    def get_provenance(self, operation_index=None):
+        """
+        Get provenance information showing what changed in each operation.
+
+        Parameters
+        ----------
+        operation_index : int, optional
+            If provided, return provenance for a specific operation.
+            Otherwise, return provenance for all operations.
+
+        Returns
+        -------
+        dict or list of dict
+            Provenance information showing changes
+
+        Examples
+        --------
+        >>> ds = DummyDataset()
+        >>> ds.assign_attrs(units='degC')
+        >>> ds.assign_attrs(units='K')  # Overwrites previous value
+        >>> prov = ds.get_provenance()
+        >>> prov[2]['provenance']['modified']['units']
+        {'before': 'degC', 'after': 'K'}
+        """
+        history = self.get_history(include_provenance=True)
+
+        if operation_index is not None:
+            if 0 <= operation_index < len(history):
+                return history[operation_index].get("provenance", {})
+            else:
+                raise IndexError(f"Operation index {operation_index} out of range")
+
+        # Return all provenance information
+        return [
+            {
+                "index": i,
+                "func": op["func"],
+                "provenance": op.get("provenance", {}),
+            }
+            for i, op in enumerate(history)
+            if "provenance" in op
+        ]
+
+    def visualize_provenance(self, compact=False):
+        """
+        Visualize provenance information showing what changed.
+
+        Parameters
+        ----------
+        compact : bool, optional
+            Use compact representation (default: False)
+
+        Returns
+        -------
+        str
+            Formatted provenance visualization
+
+        Examples
+        --------
+        >>> ds = DummyDataset()
+        >>> ds.assign_attrs(units='degC', title='Test')
+        >>> ds.assign_attrs(units='K')  # Overwrites units
+        >>> print(ds.visualize_provenance())
+        Provenance: Dataset Changes
+        ============================
+
+        Operation 1: assign_attrs
+          Modified attributes:
+            units: None → 'degC'
+            title: None → 'Test'
+
+        Operation 2: assign_attrs
+          Modified attributes:
+            units: 'degC' → 'K'
+        """
+        history = self.get_history(include_provenance=True)
+
+        if compact:
+            lines = []
+            for i, op in enumerate(history):
+                if "provenance" not in op:
+                    continue
+                prov = op["provenance"]
+                changes = []
+                if "renamed" in prov:
+                    for old, new in prov["renamed"].items():
+                        changes.append(f"renamed: {old} → {new}")
+                if "added" in prov:
+                    changes.append(f"added: {', '.join(prov['added'])}")
+                if "removed" in prov:
+                    changes.append(f"removed: {', '.join(prov['removed'])}")
+                if "modified" in prov:
+                    for key, change in prov["modified"].items():
+                        if isinstance(change, dict) and "before" in change:
+                            changes.append(f"{key}: {change['before']} → {change['after']}")
+                        else:
+                            changes.append(f"{key}: modified")
+                if changes:
+                    lines.append(f"{i}. {op['func']}: {'; '.join(changes)}")
+            return "\n".join(lines) if lines else "No changes recorded"
+        else:
+            lines = ["Provenance: Dataset Changes", "=" * 28, ""]
+
+            has_changes = False
+            for i, op in enumerate(history):
+                if "provenance" not in op:
+                    continue
+
+                has_changes = True
+                prov = op["provenance"]
+                lines.append(f"Operation {i}: {op['func']}")
+
+                if "renamed" in prov:
+                    lines.append("  Renamed:")
+                    for old, new in prov["renamed"].items():
+                        lines.append(f"    {old} → {new}")
+
+                if "added" in prov:
+                    lines.append(f"  Added: {', '.join(prov['added'])}")
+
+                if "removed" in prov:
+                    lines.append(f"  Removed: {', '.join(prov['removed'])}")
+
+                if "modified" in prov:
+                    lines.append("  Modified:")
+                    for key, change in prov["modified"].items():
+                        if isinstance(change, dict) and "before" in change:
+                            before = (
+                                repr(change["before"]) if change["before"] is not None else "None"
+                            )
+                            after = repr(change["after"])
+                            lines.append(f"    {key}: {before} → {after}")
+                        else:
+                            # Nested changes (e.g., for coords/variables)
+                            lines.append(f"    {key}:")
+                            for subkey, subchange in change.items():
+                                before = repr(subchange["before"])
+                                after = repr(subchange["after"])
+                                lines.append(f"      {subkey}: {before} → {after}")
+
+                lines.append("")
+
+            if not has_changes:
+                return "No changes recorded"
+
+            return "\n".join(lines)
+
     # ------------------------------------------------------------
     # Core API
     # ------------------------------------------------------------
@@ -687,7 +857,16 @@ class DummyDataset:
         This is equivalent to `set_global_attrs()` but follows xarray's API
         convention and returns self for method chaining.
         """
-        self._record_operation("assign_attrs", kwargs)
+        # Capture provenance: track what changed
+        provenance = {"modified": {}}
+        for key, new_value in kwargs.items():
+            old_value = self.attrs.get(key)
+            if old_value != new_value:
+                provenance["modified"][key] = {"before": old_value, "after": new_value}
+
+        self._record_operation(
+            "assign_attrs", kwargs, provenance if provenance["modified"] else None
+        )
         self.attrs.update(kwargs)
         return self
 
@@ -702,7 +881,16 @@ class DummyDataset:
         size : int
             Dimension size
         """
-        self._record_operation("add_dim", {"name": name, "size": size})
+        # Capture provenance
+        provenance = {}
+        if name in self.dims:
+            # Dimension already exists - this is a modification
+            provenance["modified"] = {name: {"before": self.dims[name], "after": size}}
+        else:
+            # New dimension
+            provenance["added"] = [name]
+
+        self._record_operation("add_dim", {"name": name, "size": size}, provenance)
         self.dims[name] = size
 
     def add_coord(self, name, dims=None, attrs=None, data=None, encoding=None):
@@ -732,7 +920,23 @@ class DummyDataset:
             args["data"] = "<data>"
         if encoding:
             args["encoding"] = encoding
-        self._record_operation("add_coord", args)
+
+        # Capture provenance
+        provenance = {}
+        if name in self.coords:
+            # Coordinate already exists - track what changed
+            old_coord = self.coords[name]
+            changes = {}
+            if dims != old_coord.dims:
+                changes["dims"] = {"before": old_coord.dims, "after": dims}
+            if attrs and attrs != old_coord.attrs:
+                changes["attrs"] = {"before": old_coord.attrs.copy(), "after": attrs}
+            if changes:
+                provenance["modified"] = {name: changes}
+        else:
+            provenance["added"] = [name]
+
+        self._record_operation("add_coord", args, provenance)
 
         arr = DummyArray(dims, attrs, data, encoding, _record_history=False)
         self._infer_and_register_dims(arr)
@@ -765,11 +969,271 @@ class DummyDataset:
             args["data"] = "<data>"
         if encoding:
             args["encoding"] = encoding
-        self._record_operation("add_variable", args)
+
+        # Capture provenance
+        provenance = {}
+        if name in self.variables:
+            # Variable already exists - track what changed
+            old_var = self.variables[name]
+            changes = {}
+            if dims != old_var.dims:
+                changes["dims"] = {"before": old_var.dims, "after": dims}
+            if attrs and attrs != old_var.attrs:
+                changes["attrs"] = {"before": old_var.attrs.copy(), "after": attrs}
+            if changes:
+                provenance["modified"] = {name: changes}
+        else:
+            provenance["added"] = [name]
+
+        self._record_operation("add_variable", args, provenance)
 
         arr = DummyArray(dims, attrs, data, encoding, _record_history=False)
         self._infer_and_register_dims(arr)
         self.variables[name] = arr
+
+    def rename_dims(self, dims_dict=None, **dims):
+        """
+        Rename dimensions (xarray-compatible API).
+
+        Parameters
+        ----------
+        dims_dict : dict-like, optional
+            Dictionary whose keys are current dimension names and whose
+            values are the desired names.
+        **dims : optional
+            Keyword form of dims_dict.
+            One of dims_dict or dims must be provided.
+
+        Returns
+        -------
+        DummyDataset
+            Returns self for method chaining
+
+        Raises
+        ------
+        KeyError
+            If a dimension doesn't exist
+        ValueError
+            If a new name already exists
+
+        Examples
+        --------
+        >>> ds = DummyDataset()
+        >>> ds.add_dim("time", 10)
+        >>> ds.add_dim("lat", 64)
+        >>> ds.rename_dims({"time": "t", "lat": "latitude"})
+        >>> # Or using keyword arguments:
+        >>> ds.rename_dims(time="t", lat="latitude")
+        """
+        # Merge dims_dict and **dims
+        name_dict = {}
+        if dims_dict is not None:
+            name_dict.update(dims_dict)
+        name_dict.update(dims)
+
+        if not name_dict:
+            raise ValueError("Either dims_dict or keyword arguments must be provided")
+
+        # Validate all renames first
+        for old_name, new_name in name_dict.items():
+            if old_name not in self.dims:
+                raise KeyError(f"Dimension '{old_name}' does not exist")
+            if new_name in self.dims and new_name != old_name:
+                raise ValueError(f"Dimension '{new_name}' already exists")
+
+        # Capture provenance
+        provenance = {
+            "renamed": name_dict.copy(),
+            "removed": list(name_dict.keys()),
+            "added": list(name_dict.values()),
+        }
+
+        self._record_operation("rename_dims", {"dims_dict": name_dict}, provenance)
+
+        # Perform all renames
+        for old_name, new_name in name_dict.items():
+            if old_name != new_name:
+                self.dims[new_name] = self.dims.pop(old_name)
+
+                # Update dimension references in coords and variables
+                for coord in self.coords.values():
+                    if coord.dims:
+                        coord.dims = [new_name if d == old_name else d for d in coord.dims]
+                for var in self.variables.values():
+                    if var.dims:
+                        var.dims = [new_name if d == old_name else d for d in var.dims]
+
+        return self
+
+    def rename_vars(self, name_dict=None, **names):
+        """
+        Rename variables (xarray-compatible API).
+
+        Parameters
+        ----------
+        name_dict : dict-like, optional
+            Dictionary whose keys are current variable names and whose
+            values are the desired names.
+        **names : optional
+            Keyword form of name_dict.
+            One of name_dict or names must be provided.
+
+        Returns
+        -------
+        DummyDataset
+            Returns self for method chaining
+
+        Raises
+        ------
+        KeyError
+            If a variable doesn't exist
+        ValueError
+            If a new name already exists
+
+        Examples
+        --------
+        >>> ds = DummyDataset()
+        >>> ds.add_dim("time", 10)
+        >>> ds.add_variable("temperature", dims=["time"])
+        >>> ds.rename_vars({"temperature": "temp"})
+        >>> # Or using keyword arguments:
+        >>> ds.rename_vars(temperature="temp")
+        """
+        # Merge name_dict and **names
+        rename_dict = {}
+        if name_dict is not None:
+            rename_dict.update(name_dict)
+        rename_dict.update(names)
+
+        if not rename_dict:
+            raise ValueError("Either name_dict or keyword arguments must be provided")
+
+        # Validate all renames first
+        for old_name, new_name in rename_dict.items():
+            if old_name not in self.variables:
+                raise KeyError(f"Variable '{old_name}' does not exist")
+            if new_name in self.variables and new_name != old_name:
+                raise ValueError(f"Variable '{new_name}' already exists")
+
+        # Capture provenance
+        provenance = {
+            "renamed": rename_dict.copy(),
+            "removed": list(rename_dict.keys()),
+            "added": list(rename_dict.values()),
+        }
+
+        self._record_operation("rename_vars", {"name_dict": rename_dict}, provenance)
+
+        # Perform all renames
+        for old_name, new_name in rename_dict.items():
+            if old_name != new_name:
+                self.variables[new_name] = self.variables.pop(old_name)
+
+        return self
+
+    def rename(self, name_dict=None, **names):
+        """
+        Rename variables, coordinates, and dimensions (xarray-compatible API).
+
+        This method can rename any combination of variables, coordinates, and dimensions.
+
+        Parameters
+        ----------
+        name_dict : dict-like, optional
+            Dictionary whose keys are current names (variables, coordinates, or dimensions)
+            and whose values are the desired names.
+        **names : optional
+            Keyword form of name_dict.
+            One of name_dict or names must be provided.
+
+        Returns
+        -------
+        DummyDataset
+            Returns self for method chaining
+
+        Raises
+        ------
+        KeyError
+            If a name doesn't exist
+        ValueError
+            If a new name already exists
+
+        Examples
+        --------
+        >>> ds = DummyDataset()
+        >>> ds.add_dim("time", 10)
+        >>> ds.add_coord("time", dims=["time"])
+        >>> ds.add_variable("temperature", dims=["time"])
+        >>> # Rename multiple items at once
+        >>> ds.rename({"time": "t", "temperature": "temp"})
+        >>> # Or using keyword arguments:
+        >>> ds.rename(time="t", temperature="temp")
+        """
+        # Merge name_dict and **names
+        rename_dict = {}
+        if name_dict is not None:
+            rename_dict.update(name_dict)
+        rename_dict.update(names)
+
+        if not rename_dict:
+            raise ValueError("Either name_dict or keyword arguments must be provided")
+
+        # Categorize renames
+        dim_renames = {}
+        coord_renames = {}
+        var_renames = {}
+
+        for old_name, new_name in rename_dict.items():
+            if old_name in self.dims:
+                dim_renames[old_name] = new_name
+            if old_name in self.coords:
+                coord_renames[old_name] = new_name
+            if old_name in self.variables:
+                var_renames[old_name] = new_name
+
+            # Check if name exists anywhere
+            if (
+                old_name not in self.dims
+                and old_name not in self.coords
+                and old_name not in self.variables
+            ):
+                raise KeyError(
+                    f"'{old_name}' does not exist in dimensions, coordinates, or variables"
+                )
+
+        # Capture provenance
+        provenance = {
+            "renamed": rename_dict.copy(),
+            "removed": list(rename_dict.keys()),
+            "added": list(rename_dict.values()),
+        }
+
+        self._record_operation("rename", {"name_dict": rename_dict}, provenance)
+
+        # Perform renames in order: dimensions first (affects coords/vars), then coords, then vars
+        if dim_renames:
+            for old_name, new_name in dim_renames.items():
+                if old_name != new_name and old_name in self.dims:
+                    self.dims[new_name] = self.dims.pop(old_name)
+                    # Update dimension references
+                    for coord in self.coords.values():
+                        if coord.dims:
+                            coord.dims = [new_name if d == old_name else d for d in coord.dims]
+                    for var in self.variables.values():
+                        if var.dims:
+                            var.dims = [new_name if d == old_name else d for d in var.dims]
+
+        if coord_renames:
+            for old_name, new_name in coord_renames.items():
+                if old_name != new_name and old_name in self.coords:
+                    self.coords[new_name] = self.coords.pop(old_name)
+
+        if var_renames:
+            for old_name, new_name in var_renames.items():
+                if old_name != new_name and old_name in self.variables:
+                    self.variables[new_name] = self.variables.pop(old_name)
+
+        return self
 
     # ------------------------------------------------------------
     # Validation
