@@ -24,7 +24,7 @@ markdownlint-cli2 = ">=0.12.0"
 
 [tasks]
 test = "PYTHONPATH=src pytest tests/ -v"
-example = "PYTHONPATH=src python example.py"
+example = "PYTHONPATH=src python examples/example.py"
 python = "PYTHONPATH=src python"
 ipython = "PYTHONPATH=src ipython"
 docs-serve = "mkdocs serve"
@@ -33,18 +33,18 @@ docs-deploy = "mkdocs gh-deploy"
 
 # Formatting tasks
 format = { depends-on = ["format-python", "format-imports"] }
-format-python = "black src/ tests/ *.py"
-format-imports = "isort src/ tests/ *.py"
+format-python = "black src/ tests/ examples/"
+format-imports = "isort src/ tests/ examples/"
 
 # Linting tasks
 lint = { depends-on = ["lint-python", "lint-markdown"] }
-lint-python = "flake8 src/ tests/ *.py"
+lint-python = "flake8 src/ tests/ examples/"
 lint-markdown = "markdownlint-cli2 '**/*.md' '#node_modules'"
 
 # Check formatting without modifying files
 check-format = { depends-on = ["check-format-python", "check-format-imports"] }
-check-format-python = "black --check src/ tests/ *.py"
-check-format-imports = "isort --check-only src/ tests/ *.py"
+check-format-python = "black --check src/ tests/ examples/"
+check-format-imports = "isort --check-only src/ tests/ examples/"
 
 # Run all checks (format check + lint)
 check = { depends-on = ["check-format", "lint"] }
