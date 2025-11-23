@@ -52,6 +52,9 @@ example_output.zarr/
 # MkDocs
 site/
 
+# Design documents (to be removed later)
+dummy_xarray.md
+
 # OS
 .DS_Store
 Thumbs.db

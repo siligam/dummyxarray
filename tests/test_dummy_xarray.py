@@ -279,6 +279,90 @@ class TestDummyDataset:
         assert "tas" in loaded.data_vars
         assert len(loaded["tas"]) == 10
 
+    def test_from_xarray_without_data(self):
+        """Test creating DummyDataset from xarray without data"""
+        import xarray as xr
+        
+        # Create an xarray dataset
+        xr_ds = xr.Dataset(
+            data_vars={
+                "temperature": (["time", "lat"], np.random.rand(10, 5),
+                               {"units": "K", "long_name": "Temperature"})
+            },
+            coords={
+                "time": (["time"], np.arange(10), {"units": "days"}),
+                "lat": (["lat"], np.linspace(-90, 90, 5), {"units": "degrees_north"})
+            },
+            attrs={"title": "Test Dataset", "institution": "Test"}
+        )
+        
+        # Convert to DummyDataset without data
+        dummy_ds = DummyDataset.from_xarray(xr_ds, include_data=False)
+        
+        # Check structure
+        assert dummy_ds.dims == {"time": 10, "lat": 5}
+        assert "temperature" in dummy_ds.variables
+        assert "time" in dummy_ds.coords
+        assert "lat" in dummy_ds.coords
+        
+        # Check attributes
+        assert dummy_ds.attrs["title"] == "Test Dataset"
+        assert dummy_ds.variables["temperature"].attrs["units"] == "K"
+        assert dummy_ds.coords["time"].attrs["units"] == "days"
+        
+        # Check that data is NOT included
+        assert dummy_ds.variables["temperature"].data is None
+        assert dummy_ds.coords["time"].data is None
+
+    def test_from_xarray_with_data(self):
+        """Test creating DummyDataset from xarray with data"""
+        import xarray as xr
+        
+        # Create an xarray dataset
+        temp_data = np.random.rand(10, 5)
+        time_data = np.arange(10)
+        
+        xr_ds = xr.Dataset(
+            data_vars={
+                "temperature": (["time", "lat"], temp_data)
+            },
+            coords={
+                "time": (["time"], time_data)
+            }
+        )
+        
+        # Convert to DummyDataset with data
+        dummy_ds = DummyDataset.from_xarray(xr_ds, include_data=True)
+        
+        # Check that data IS included
+        assert dummy_ds.variables["temperature"].data is not None
+        assert dummy_ds.coords["time"].data is not None
+        np.testing.assert_array_equal(
+            dummy_ds.variables["temperature"].data, temp_data
+        )
+        np.testing.assert_array_equal(
+            dummy_ds.coords["time"].data, time_data
+        )
+
+    def test_from_xarray_preserves_encoding(self):
+        """Test that encoding is preserved when converting from xarray"""
+        import xarray as xr
+        
+        # Create dataset with encoding
+        xr_ds = xr.Dataset(
+            data_vars={
+                "temperature": (["time"], np.random.rand(10))
+            }
+        )
+        xr_ds["temperature"].encoding = {"dtype": "float32", "chunks": (5,)}
+        
+        # Convert to DummyDataset
+        dummy_ds = DummyDataset.from_xarray(xr_ds)
+        
+        # Check encoding is preserved
+        assert dummy_ds.variables["temperature"].encoding["dtype"] == "float32"
+        assert dummy_ds.variables["temperature"].encoding["chunks"] == (5,)
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

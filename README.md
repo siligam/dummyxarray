@@ -7,6 +7,8 @@ A lightweight xarray-like object for building dataset metadata specifications be
 ✅ **Define dimensions and their sizes**  
 ✅ **Add variables and coordinates with metadata**  
 ✅ **Automatic dimension inference from data**  
+✅ **Create from existing xarray.Dataset** (extract metadata)  
+✅ **Create from YAML specifications**  
 ✅ **Export to YAML/JSON for documentation**  
 ✅ **Save/load specifications from YAML files**  
 ✅ **Support for encoding** (dtype, chunks, compression)  
@@ -129,7 +131,20 @@ print(xr_ds)
 ds.to_zarr("output.zarr")
 ```
 
-### 7. Save/Load Specifications
+### 7. Create from Existing xarray.Dataset
+
+```python
+import xarray as xr
+
+# Extract metadata from an existing xarray dataset
+existing_ds = xr.open_dataset("my_data.nc")
+dummy_ds = DummyDataset.from_xarray(existing_ds, include_data=False)
+
+# Save as template
+dummy_ds.save_yaml("template.yaml")
+```
+
+### 8. Save/Load Specifications
 
 ```python
 # Save the dataset structure to YAML

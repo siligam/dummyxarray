@@ -344,6 +344,68 @@ class DummyDataset:
 
         return ds
 
+    @classmethod
+    def from_xarray(cls, xr_dataset, include_data=False):
+        """
+        Create a DummyDataset from an existing xarray.Dataset.
+        
+        This captures all metadata (dimensions, coordinates, variables, attributes,
+        and encoding) from an xarray.Dataset without the actual data arrays
+        (unless include_data=True).
+        
+        Parameters
+        ----------
+        xr_dataset : xarray.Dataset
+            The xarray Dataset to extract metadata from
+        include_data : bool, default False
+            If True, include the actual data arrays. If False, only capture
+            metadata structure.
+            
+        Returns
+        -------
+        DummyDataset
+            A new DummyDataset with the structure and metadata from xr_dataset
+            
+        Examples
+        --------
+        >>> import xarray as xr
+        >>> import numpy as np
+        >>> xr_ds = xr.Dataset({
+        ...     "temperature": (["time", "lat"], np.random.rand(10, 5))
+        ... })
+        >>> dummy_ds = DummyDataset.from_xarray(xr_ds)
+        >>> print(dummy_ds.dims)
+        {'time': 10, 'lat': 5}
+        """
+        ds = cls()
+        
+        # Copy global attributes
+        ds.attrs.update(dict(xr_dataset.attrs))
+        
+        # Extract dimensions
+        for dim_name, dim_size in xr_dataset.sizes.items():
+            ds.dims[dim_name] = dim_size
+        
+        # Extract coordinates
+        for coord_name, coord_var in xr_dataset.coords.items():
+            ds.coords[coord_name] = DummyArray(
+                dims=list(coord_var.dims),
+                attrs=dict(coord_var.attrs),
+                data=coord_var.values if include_data else None,
+                encoding=dict(coord_var.encoding) if hasattr(coord_var, 'encoding') else {}
+            )
+        
+        # Extract data variables
+        for var_name, var in xr_dataset.data_vars.items():
+            ds.variables[var_name] = DummyArray(
+                dims=list(var.dims),
+                attrs=dict(var.attrs),
+                data=var.values if include_data else None,
+                encoding=dict(var.encoding) if hasattr(var, 'encoding') else {}
+            )
+        
+        return ds
+
     # ------------------------------------------------------------
     # Build xarray.Dataset
     # ------------------------------------------------------------

@@ -1,0 +1,57 @@
+dimensions:
+  time: 12
+  lat: 64
+  lon: 128
+coordinates:
+  time:
+    dims:
+    - time
+    attrs:
+      units: months since 2020-01-01
+      calendar: standard
+    encoding: {}
+    has_data: false
+  lat:
+    dims:
+    - lat
+    attrs:
+      units: degrees_north
+      standard_name: latitude
+    encoding: {}
+    has_data: false
+  lon:
+    dims:
+    - lon
+    attrs:
+      units: degrees_east
+      standard_name: longitude
+    encoding: {}
+    has_data: false
+variables:
+  temperature:
+    dims:
+    - time
+    - lat
+    - lon
+    attrs:
+      long_name: Near-Surface Air Temperature
+      units: K
+      standard_name: air_temperature
+    encoding: {}
+    has_data: false
+  precipitation:
+    dims:
+    - time
+    - lat
+    - lon
+    attrs:
+      long_name: Precipitation Flux
+      units: kg m-2 s-1
+      standard_name: precipitation_flux
+    encoding: {}
+    has_data: false
+attrs:
+  title: Climate Model Output
+  institution: DKRZ
+  Conventions: CF-1.8
+  source: Example Model v1.0
