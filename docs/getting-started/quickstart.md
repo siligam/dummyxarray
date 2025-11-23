@@ -119,6 +119,85 @@ ds2.add_variable("my_var", data=data)
 print(ds2.dims)  # {'dim_0': 10, 'dim_1': 20, 'dim_2': 30}
 ```
 
+## Adding Encoding for Zarr/NetCDF
+
+Specify encoding parameters for compression and chunking:
+
+```python
+ds.add_variable(
+    "temperature",
+    ["time", "lat", "lon"],
+    data=temp_data,
+    attrs={"long_name": "Temperature", "units": "K"},
+    encoding={
+        "dtype": "float32",
+        "chunks": (6, 32, 64),
+        "compressor": None,  # Can use zarr.Blosc() or similar
+    }
+)
+```
+
+## Validation
+
+Check for dimension mismatches and structural issues:
+
+```python
+# Validate the dataset structure
+ds.validate()
+```
+
+## Create from Existing xarray.Dataset
+
+Extract metadata from an existing xarray dataset:
+
+```python
+import xarray as xr
+
+# Load existing dataset and extract metadata
+existing_ds = xr.open_dataset("my_data.nc")
+dummy_ds = DummyDataset.from_xarray(existing_ds, include_data=False)
+
+# Save as template for reuse
+dummy_ds.save_yaml("template.yaml")
+```
+
+## Populate with Random Data
+
+For testing, automatically generate meaningful random data:
+
+```python
+# Create structure without data
+ds = DummyDataset()
+ds.add_dim("time", 10)
+ds.add_dim("lat", 5)
+ds.add_coord("lat", ["lat"], attrs={"units": "degrees_north"})
+ds.add_variable("temperature", ["time", "lat"], 
+                attrs={"units": "K", "standard_name": "air_temperature"})
+
+# Populate with meaningful random data
+ds.populate_with_random_data(seed=42)
+
+# Now has realistic data: temperature in Kelvin, lat from -90 to 90
+print(ds.variables["temperature"].data.mean())  # ~280 K
+```
+
+## xarray-style Attribute Access
+
+Access coordinates and variables using dot notation:
+
+```python
+# Access coordinates and variables as attributes (like xarray)
+ds.time                    # Same as ds.coords['time']
+ds.temperature             # Same as ds.variables['temperature']
+
+# Modify via attribute access
+ds.time.data = np.arange(10)
+ds.time.attrs["standard_name"] = "time"
+
+# Inspect with rich repr
+print(ds.time)             # Shows dimensions, shape, dtype, data, attrs
+```
+
 ## Next Steps
 
 - Learn about [validation](../user-guide/validation.md)
