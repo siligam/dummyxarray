@@ -1,0 +1,12 @@
+include README.md
+include LICENSE
+include pyproject.toml
+include setup.py
+recursive-include src *.py
+recursive-include tests *.py
+recursive-include docs *.md *.yml *.yaml
+include mkdocs.yml
+prune .pixi
+prune build
+prune dist
+prune *.egg-info

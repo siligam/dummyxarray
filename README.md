@@ -1,5 +1,10 @@
 # Dummy Xarray
 
+[![CI](https://github.com/yourusername/fakexarray/workflows/CI/badge.svg)](https://github.com/yourusername/fakexarray/actions/workflows/ci.yml)
+[![Documentation](https://img.shields.io/badge/docs-mkdocs-blue)](https://yourusername.github.io/fakexarray/)
+[![Python Version](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A lightweight xarray-like object for building dataset metadata specifications before creating actual xarray datasets.
 
 ## Features
@@ -352,6 +357,44 @@ Possible enhancements:
 - Dimension registry with axis labels (X/Y/Z/T)
 - Plugin system for custom validators
 
+## Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+### Quick Start for Contributors
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/fakexarray.git
+cd fakexarray
+
+# Install dependencies
+pixi install
+
+# Run tests
+pixi run test
+
+# Format and lint
+pixi run format
+pixi run check
+```
+
+## CI/CD
+
+The project uses GitHub Actions for continuous integration and deployment:
+
+- **CI Workflow**: Runs tests, linting, and formatting checks on all PRs and pushes
+- **Documentation Deployment**: Automatically deploys docs to GitHub Pages on main branch
+- **Release Workflow**: Creates GitHub releases and publishes to PyPI on version tags
+- **Dependency Updates**: Weekly automated dependency updates via Dependabot
+
+### Workflows
+
+- `.github/workflows/ci.yml` - Main CI pipeline (test, lint, docs build)
+- `.github/workflows/docs.yml` - Documentation deployment to GitHub Pages
+- `.github/workflows/release.yml` - Release automation and PyPI publishing
+- `.github/workflows/dependencies.yml` - Automated dependency updates
+
 ## License
 
-This is a demonstration/utility tool. Feel free to use and modify as needed.
+MIT License - see [LICENSE](LICENSE) file for details.
