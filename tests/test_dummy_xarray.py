@@ -4,7 +4,7 @@ Tests for DummyDataset and DummyArray classes
 
 import pytest
 import numpy as np
-from dummy_xarray import DummyArray, DummyDataset
+from dummyxarray import DummyArray, DummyDataset
 
 
 class TestDummyArray:

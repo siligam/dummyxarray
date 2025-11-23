@@ -13,7 +13,7 @@ This script demonstrates the key features of the dummy xarray-like object:
 """
 
 import numpy as np
-from dummy_xarray import DummyDataset
+from dummyxarray import DummyDataset
 
 
 def example_basic_usage():

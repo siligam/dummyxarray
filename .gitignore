@@ -46,10 +46,11 @@ htmlcov/
 # Output files
 *.zarr/
 *.nc
-*.yaml
-*.yml
 dataset_spec.yaml
 example_output.zarr/
+
+# MkDocs
+site/
 
 # OS
 .DS_Store
