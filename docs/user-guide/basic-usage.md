@@ -137,6 +137,69 @@ precip_data = np.random.rand(12, 64)
 ds_loaded.variables["precipitation"].data = precip_data
 ```
 
+## xarray-style Attribute Access
+
+Access coordinates and variables using dot notation, just like in xarray:
+
+```python
+# Access coordinates and variables as attributes
+ds.time                    # Same as ds.coords['time']
+ds.temperature             # Same as ds.variables['temperature']
+ds.lat                     # Same as ds.coords['lat']
+
+# Modify data via attribute access
+ds.time.data = np.arange(10)
+ds.time.attrs["standard_name"] = "time"
+
+# Inspect with rich repr
+print(ds.time)
+# Output:
+# <dummyxarray.DummyArray>
+# Dimensions: (time)
+# Shape: (10,)
+# dtype: int64
+# Data: [0 1 2 3 4 5 6 7 8 9]
+# Attributes:
+#     units: days since 2020-01-01
+#     standard_name: time
+
+# View the full dataset
+print(ds)
+# Shows dimensions, coordinates, variables with data indicators (✓/✗)
+```
+
+**Note:** Coordinates take precedence over variables if both have the same name (just like xarray).
+
+## Populating with Random Data
+
+For testing purposes, you can automatically populate all coordinates and variables with meaningful random data:
+
+```python
+ds = DummyDataset()
+ds.add_dim("time", 10)
+ds.add_dim("lat", 5)
+
+ds.add_coord("time", ["time"], attrs={"units": "days"})
+ds.add_coord("lat", ["lat"], attrs={"units": "degrees_north"})
+ds.add_variable("temperature", ["time", "lat"], 
+                attrs={"units": "K", "standard_name": "air_temperature"})
+
+# Populate with meaningful random data
+ds.populate_with_random_data(seed=42)  # seed for reproducibility
+
+# Now all coords and variables have realistic data
+print(ds.coords["lat"].data)  # e.g., [-90, -45, 0, 45, 90]
+print(ds.variables["temperature"].data.mean())  # e.g., ~280 K
+```
+
+The `populate_with_random_data()` method generates data based on metadata hints:
+- **Temperature**: 250-310 K
+- **Precipitation**: 0-10 mm/day  
+- **Pressure**: 500-1050 hPa
+- **Latitude**: -90 to 90
+- **Longitude**: -180 to 180
+- **Time**: Sequential integers
+
 ## Viewing Dataset Structure
 
 ```python
@@ -148,6 +211,9 @@ print(ds.to_json())
 
 # As dictionary
 spec_dict = ds.to_dict()
+
+# Interactive repr (shows data presence indicators)
+print(ds)
 ```
 
 ## Next Steps

@@ -17,6 +17,10 @@ Dummy Xarray allows you to define the structure of your dataset including dimens
 ✅ **Define dimensions and their sizes**  
 ✅ **Add variables and coordinates with metadata**  
 ✅ **Automatic dimension inference from data**  
+✅ **xarray-style attribute access** (`ds.time`, `ds.temperature`)  
+✅ **Rich repr for interactive exploration** (DummyDataset and DummyArray)  
+✅ **Populate with random but meaningful data** (for testing)  
+✅ **Create from existing xarray.Dataset** (extract metadata)  
 ✅ **Export to YAML/JSON for documentation**  
 ✅ **Save/load specifications from YAML files**  
 ✅ **Support for encoding** (dtype, chunks, compression)  
