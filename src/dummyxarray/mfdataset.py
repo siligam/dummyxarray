@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union
 import xarray as xr
 
 if TYPE_CHECKING:
-    from dummyxarray.core import DummyDataset
+    from .core import DummyDataset
 
 
 def open_mfdataset(
@@ -55,9 +55,6 @@ def open_mfdataset(
     - Files must have compatible structures (same variables, compatible coordinates)
     - The concat_dim must exist in all files
     """
-    # Import here to avoid circular imports
-    from dummyxarray.core import DummyDataset
-
     # Expand glob pattern if needed
     if isinstance(paths, str):
         file_paths = sorted(glob.glob(paths))
@@ -224,7 +221,7 @@ def _combine_file_metadata(file_metadata: List[Dict[str, Any]], concat_dim: str)
     DummyDataset
         Combined dataset with metadata from all files
     """
-    from dummyxarray.core import DummyDataset
+    from .core import DummyDataset
 
     # Start with first file's structure
     first = file_metadata[0]

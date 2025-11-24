@@ -107,9 +107,7 @@ def main():
         create_sample_files(output_dir)
 
         print("\n2. Opening multiple files with DummyDataset.open_mfdataset()...")
-        ds = DummyDataset.open_mfdataset(
-            str(output_dir / "climate_data_*.nc"), concat_dim="time"
-        )
+        ds = DummyDataset.open_mfdataset(str(output_dir / "climate_data_*.nc"), concat_dim="time")
 
         print("\n3. Dataset structure:")
         print(ds)

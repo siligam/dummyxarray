@@ -1,10 +1,13 @@
 # Multi-file Dataset Support
 
-The `open_mfdataset()` feature allows you to work with multiple NetCDF files as a single dataset, tracking which files contain specific coordinate ranges. This is particularly useful for large climate datasets split across multiple files.
+The `open_mfdataset()` feature allows you to work with multiple NetCDF files as a single dataset,
+tracking which files contain specific coordinate ranges. This is particularly useful for large climate
+datasets split across multiple files.
 
 ## Overview
 
-Unlike xarray's `open_mfdataset()` which loads data into memory, DummyDataset's version only reads **metadata** from files. This makes it ideal for:
+Unlike xarray's `open_mfdataset()` which loads data into memory, DummyDataset's version only reads
+**metadata** from files. This makes it ideal for:
 
 - Planning data access patterns
 - Understanding dataset structure across multiple files
