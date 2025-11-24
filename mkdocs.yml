@@ -63,6 +63,7 @@ nav:
       - Quick Start: getting-started/quickstart.md
   - User Guide:
       - Basic Usage: user-guide/basic-usage.md
+      - Multi-file Datasets: user-guide/mfdataset.md
       - CF Compliance: user-guide/cf-compliance.md
       - CF Standards (cf_xarray): user-guide/cf-standards.md
       - History Tracking: user-guide/history-tracking.md

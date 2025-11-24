@@ -15,6 +15,7 @@ Perfect for planning datasets, generating templates, and ensuring CF compliance.
 - 🔄 **xarray compatibility** - Convert to/from xarray.Dataset
 - ✅ **CF compliance** - Community standards via cf_xarray integration
 - 📥 **ncdump import** - Create from `ncdump -h` output
+- 📂 **Multi-file support** - Track and query multiple NetCDF files
 - 📊 **Smart data generation** - Populate with realistic random data
 - 📝 **History tracking** - Record and replay all operations
 - 💾 **Multiple formats** - Export to YAML, JSON, Zarr, NetCDF
