@@ -71,6 +71,13 @@ nav:
   - API Reference:
       - DummyDataset: api/dataset.md
       - DummyArray: api/array.md
+      - Mixins:
+          - HistoryMixin: api/mixins/history.md
+          - ProvenanceMixin: api/mixins/provenance.md
+          - CFComplianceMixin: api/mixins/cf-compliance.md
+          - IOMixin: api/mixins/io.md
+          - ValidationMixin: api/mixins/validation.md
+          - DataGenerationMixin: api/mixins/data-generation.md
   - Architecture:
       - Design Overview: architecture.md
       - Testing: testing.md
