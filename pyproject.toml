@@ -91,7 +91,7 @@ docs = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/fakexarray"
-Documentation = "https://yourusername.github.io/fakexarray/"
-Repository = "https://github.com/yourusername/fakexarray"
-Issues = "https://github.com/yourusername/fakexarray/issues"
+Homepage = "https://github.com/siligam/dummyxarray"
+Documentation = "https://siligam.github.io/dummyxarray/"
+Repository = "https://github.com/siligam/dummyxarray"
+Issues = "https://github.com/siligam/dummyxarray/issues"

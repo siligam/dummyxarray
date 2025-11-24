@@ -6,7 +6,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/dummyxarray.git
+git clone https://github.com/siligam/dummyxarray.git
 cd dummyxarray
 
 # Install dependencies with pixi
@@ -22,7 +22,7 @@ If you prefer using pip, you can install the dependencies manually:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/dummyxarray.git
+git clone https://github.com/siligam/dummyxarray.git
 cd dummyxarray
 
 # Install dependencies

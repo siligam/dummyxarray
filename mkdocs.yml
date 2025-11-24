@@ -1,8 +1,8 @@
 site_name: Dummy Xarray
 site_description: A lightweight xarray-like object for building dataset metadata specifications
-site_author: DKRZ
-repo_url: https://github.com/yourusername/fakexarray
-repo_name: fakexarray
+site_author: Pavan Siligam
+repo_url: https://github.com/siligam/dummyxarray
+repo_name: dummyxarray
 
 theme:
   name: material
@@ -82,5 +82,6 @@ nav:
           - DataGenerationMixin: api/mixins/data-generation.md
   - Architecture:
       - Design Overview: architecture.md
+      - CF Standards Approach: CF_STANDARDS_APPROACH.md
       - Testing: testing.md
   - Examples: examples.md

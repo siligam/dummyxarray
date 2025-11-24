@@ -1,6 +1,6 @@
 # dummyxarray
 
-[![CI](https://github.com/yourusername/dummyxarray/workflows/CI/badge.svg)](https://github.com/yourusername/dummyxarray/actions)
+[![CI](https://github.com/siligam/dummyxarray/workflows/CI/badge.svg)](https://github.com/siligam/dummyxarray/actions)
 [![Python Version](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 

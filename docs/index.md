@@ -1,4 +1,4 @@
-# dummyxarray
+# DummyXarray
 
 A lightweight xarray-like object for building dataset metadata specifications before creating actual xarray datasets.
 
