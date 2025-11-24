@@ -63,10 +63,15 @@ nav:
       - Quick Start: getting-started/quickstart.md
   - User Guide:
       - Basic Usage: user-guide/basic-usage.md
+      - CF Compliance: user-guide/cf-compliance.md
+      - History Tracking: user-guide/history-tracking.md
       - Validation: user-guide/validation.md
       - Encoding: user-guide/encoding.md
       - YAML Export: user-guide/yaml-export.md
   - API Reference:
       - DummyDataset: api/dataset.md
       - DummyArray: api/array.md
+  - Architecture:
+      - Design Overview: architecture.md
+      - Testing: testing.md
   - Examples: examples.md

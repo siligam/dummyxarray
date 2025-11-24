@@ -120,7 +120,7 @@ ds.to_zarr("output.zarr")
 ### Project Architecture
 
 - [Design Overview](architecture.md) - Mixin-based architecture
-- [Testing](../tests/README.md) - Test structure and fixtures
+- [Testing](testing.md) - Test structure and fixtures
 
 ## Project Status
 

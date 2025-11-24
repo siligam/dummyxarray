@@ -278,7 +278,7 @@ tests/
 
 **Total**: 159 tests with comprehensive coverage
 
-See [Testing Documentation](../tests/README.md) for details.
+See [Testing Documentation](testing.md) for details.
 
 ## Design Patterns
 
