@@ -22,6 +22,7 @@ black = ">=24.0.0"
 isort = ">=5.13.0"
 flake8 = ">=7.0.0"
 markdownlint-cli2 = ">=0.12.0"
+netcdf4 = ">=1.7.3,<2"
 
 [tasks]
 test = "PYTHONPATH=src pytest tests/ -v"
