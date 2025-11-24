@@ -1,5 +1,5 @@
 [project]
-name = "fakexarray"
+name = "dummyxarray"
 version = "0.1.0"
 description = "A lightweight xarray-like object for building dataset metadata specifications"
 channels = ["conda-forge"]

@@ -61,7 +61,7 @@ jobs:
             ```bash
             # Clone the repository
             git clone https://github.com/${{ github.repository }}.git
-            cd fakexarray
+            cd dummyxarray
             git checkout ${{ github.ref_name }}
             
             # Install with pixi

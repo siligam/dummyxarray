@@ -14,8 +14,8 @@ Thank you for your interest in contributing to dummyxarray! This document provid
 1. Fork the repository on GitHub
 2. Clone your fork:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/fakexarray.git
-   cd fakexarray
+   git clone https://github.com/YOUR_USERNAME/dummyxarray.git
+   cd dummyxarray
    ```
 
 3. Install dependencies with pixi:

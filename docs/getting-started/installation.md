@@ -6,8 +6,8 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/fakexarray.git
-cd fakexarray
+git clone https://github.com/yourusername/dummyxarray.git
+cd dummyxarray
 
 # Install dependencies with pixi
 pixi install
@@ -22,8 +22,8 @@ If you prefer using pip, you can install the dependencies manually:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/fakexarray.git
-cd fakexarray
+git clone https://github.com/yourusername/dummyxarray.git
+cd dummyxarray
 
 # Install dependencies
 pip install -r requirements.txt
