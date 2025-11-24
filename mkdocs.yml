@@ -64,6 +64,7 @@ nav:
   - User Guide:
       - Basic Usage: user-guide/basic-usage.md
       - CF Compliance: user-guide/cf-compliance.md
+      - CF Standards (cf_xarray): user-guide/cf-standards.md
       - History Tracking: user-guide/history-tracking.md
       - ncdump Import: user-guide/ncdump-import.md
       - Validation: user-guide/validation.md

@@ -9,6 +9,7 @@ import numpy as np
 
 # Import mixins
 from .cf_compliance import CFComplianceMixin
+from .cf_standards import CFStandardsMixin
 from .data_generation import DataGenerationMixin
 from .history import HistoryMixin
 from .io import IOMixin
@@ -222,6 +223,7 @@ class DummyDataset(
     HistoryMixin,
     ProvenanceMixin,
     CFComplianceMixin,
+    CFStandardsMixin,
     IOMixin,
     ValidationMixin,
     DataGenerationMixin,

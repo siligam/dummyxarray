@@ -13,7 +13,7 @@ Perfect for planning datasets, generating templates, and ensuring CF compliance.
 
 - 📋 **Metadata-first design** - Define structure before data
 - 🔄 **xarray compatibility** - Convert to/from xarray.Dataset
-- ✅ **CF compliance** - Axis detection, validation, standard names
+- ✅ **CF compliance** - Community standards via cf_xarray integration
 - 📥 **ncdump import** - Create from `ncdump -h` output
 - 📊 **Smart data generation** - Populate with realistic random data
 - 📝 **History tracking** - Record and replay all operations
