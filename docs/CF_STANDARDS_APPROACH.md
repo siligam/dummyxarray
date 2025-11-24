@@ -1,9 +1,10 @@
 # CF Standards Approach
 
-## Design Decision: cf_xarray Integration
+## Design Decision: cf_xarray as Required Dependency
 
-This document explains why we use `cf_xarray` for CF standards compliance instead of
-creating our own implementation or using IOOS compliance-checker.
+This document explains why we use `cf_xarray` as a **required dependency** for CF
+standards compliance instead of creating our own implementation or using IOOS
+compliance-checker.
 
 ## The Problem
 
@@ -41,18 +42,19 @@ We need to ensure datasets follow CF conventions, particularly for:
 - Slow for quick checks
 - Overkill for metadata validation
 
-### 3. cf_xarray (✅ Recommended)
+### 3. cf_xarray (✅ **CHOSEN - Required Dependency**)
 
 **Pros:**
-- **Metadata-focused** - Works without data
+- **Metadata-focused** - Works without data (we create temporary arrays)
 - **Community standards** - Based on CF conventions + MetPy + Iris
 - **Lightweight** - Minimal dependencies
 - **Ecosystem integration** - Works with xarray
 - **Actively maintained** - Regular updates
 - **Flexible** - Can work with in-memory objects
 
-**Cons:**
-- Optional dependency (but this is actually a pro for users)
+**Decision:**
+- **Required dependency** - Ensures all users get same CF validation
+- **No fallback needed** - Simpler codebase, consistent behavior
 
 ## Our Approach: Hybrid Strategy
 
@@ -71,9 +73,9 @@ ds.validate_cf()
 - When no dependencies allowed
 - Basic compliance checks
 
-### Tier 2: cf_xarray Standards (Optional, Recommended)
+### Tier 2: cf_xarray Standards (Required, Recommended)
 ```python
-# Optional dependency, community standards
+# Required dependency, community standards, works without data!
 ds.apply_cf_standards()
 ds.validate_cf_metadata()
 ```
@@ -83,6 +85,7 @@ ds.validate_cf_metadata()
 - Publishing data
 - Ecosystem compatibility
 - Following community standards
+- **Metadata-only workflows** (no data needed!)
 
 ### Tier 3: IOOS Compliance Checker (Optional, Comprehensive)
 ```python
@@ -109,16 +112,19 @@ cf_xarray's criteria are based on:
 This means **we're not making up our own rules** - we're using what the community
 has already agreed upon.
 
-### 2. Metadata-First Design
+### 2. Metadata-First Design ✨
 
-cf_xarray can work with metadata alone:
+**NEW**: cf_xarray now works with metadata alone - no data required!
+
 ```python
-# Works without data!
+# Works without data! (we create temporary arrays internally)
 ds.add_coord("time", dims=["time"], attrs={"units": "days since 2000-01-01"})
+ds.add_variable("temperature", dims=["time"], attrs={"units": "K"})
 ds.apply_cf_standards()  # Detects T axis, adds attributes
+# Data is still None!
 ```
 
-IOOS compliance-checker requires:
+IOOS compliance-checker still requires:
 ```python
 # Must have data
 ds.populate_with_random_data()  # Required!
@@ -178,27 +184,23 @@ class CFStandardsMixin:
 
 ### For Users
 
-**Development:**
+**Development (Metadata-Only):**
 ```python
-# Fast iteration with built-in
-ds.infer_axis()
-ds.validate_cf()
+# Fast iteration, no data needed!
+ds.apply_cf_standards()
+ds.validate_cf_metadata()
 ```
 
 **Production:**
 ```python
-# Apply community standards
-if ds.check_cf_standards_available():
-    ds.apply_cf_standards()
-    result = ds.validate_cf_metadata()
-else:
-    # Fallback to built-in
-    ds.infer_axis()
+# Apply community standards (always available)
+ds.apply_cf_standards()
+result = ds.validate_cf_metadata()
 ```
 
 **Publication:**
 ```python
-# Final comprehensive check
+# Final comprehensive check (requires data)
 ds.populate_with_random_data()
 result = validate_with_compliance_checker(ds, cf_version="1.8")
 ```
@@ -214,11 +216,12 @@ When adding CF-related features:
 
 ## Benefits of This Approach
 
-1. **No vendor lock-in** - Works without cf_xarray
-2. **Community alignment** - Uses agreed standards when available
+1. **Community alignment** - Uses agreed standards (cf_xarray required)
+2. **Metadata-only workflows** - Works without data (temporary arrays)
 3. **Flexibility** - Users choose their level of validation
-4. **Performance** - Fast built-in for development, thorough for production
+4. **Performance** - Fast for metadata-only, thorough for production
 5. **Ecosystem compatibility** - Datasets work with other tools
+6. **Simpler codebase** - No optional dependency handling
 
 ## Future Considerations
 
@@ -238,15 +241,17 @@ We should track:
 
 ## Conclusion
 
-By using cf_xarray for CF standards, we:
+By using cf_xarray as a required dependency for CF standards, we:
 - ✅ Follow community-agreed conventions
 - ✅ Avoid reinventing the wheel
 - ✅ Ensure ecosystem compatibility
-- ✅ Provide flexibility (optional dependency)
-- ✅ Enable both fast and thorough validation
+- ✅ **Enable metadata-only workflows** (no data required!)
+- ✅ Simplify codebase (no optional dependency handling)
+- ✅ Guarantee consistent behavior for all users
 
 This is the right approach for a metadata-focused library that wants to integrate
-with the broader scientific Python ecosystem.
+with the broader scientific Python ecosystem while maintaining true metadata-only
+capabilities.
 
 ## References
 
