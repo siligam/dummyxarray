@@ -86,10 +86,13 @@ ds.save_yaml("template.yaml")
 
 ## Documentation
 
-- **[User Guide](docs/user-guide.md)** - Detailed usage examples
-- **[API Reference](docs/api.md)** - Complete API documentation
-- **[Examples](examples/)** - Working code examples
-- **[CF Compliance](docs/cf-compliance.md)** - CF convention support
+Full documentation is available at **https://siligam.github.io/dummyxarray/**
+
+- **[Getting Started](docs/getting-started/quickstart.md)** - Quick start guide
+- **[User Guide](docs/user-guide/basic-usage.md)** - Detailed usage examples
+- **[API Reference](docs/api/dataset.md)** - Complete API documentation
+- **[Examples](docs/examples.md)** - Working code examples
+- **[CF Compliance](docs/user-guide/cf-compliance.md)** - CF convention support
 
 ## Development
 
