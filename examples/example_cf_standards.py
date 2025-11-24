@@ -149,11 +149,11 @@ print("Comparison: Built-in vs CF Standards")
 print("=" * 60)
 
 builtin_result = ds.validate_cf()
-print(f"\nBuilt-in validation:")
+print("\nBuilt-in validation:")
 print(f"  Errors: {len(builtin_result['errors'])}")
 print(f"  Warnings: {len(builtin_result['warnings'])}")
 
-print(f"\ncf_xarray validation:")
+print("\ncf_xarray validation:")
 print(f"  Errors: {len(validation['errors'])}")
 print(f"  Warnings: {len(validation['warnings'])}")
 print(f"  Suggestions: {len(validation['suggestions'])}")

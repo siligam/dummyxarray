@@ -5,7 +5,7 @@ DummyDataset objects from NetCDF metadata.
 """
 
 import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional
 
 
 def parse_ncdump_header(header_text: str) -> Dict[str, Any]:

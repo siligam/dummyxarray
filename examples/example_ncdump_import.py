@@ -14,45 +14,45 @@ from dummyxarray import from_ncdump_header
 ncdump_header = """
 netcdf climate_data {
 dimensions:
-	time = UNLIMITED ; // (365 currently)
-	lev = 5 ;
-	lat = 64 ;
-	lon = 128 ;
+    time = UNLIMITED ; // (365 currently)
+    lev = 5 ;
+    lat = 64 ;
+    lon = 128 ;
 variables:
-	double time(time) ;
-		time:units = "days since 2000-01-01 00:00:00" ;
-		time:calendar = "gregorian" ;
-		time:standard_name = "time" ;
-		time:axis = "T" ;
-	float lev(lev) ;
-		lev:units = "hPa" ;
-		lev:positive = "down" ;
-		lev:standard_name = "air_pressure" ;
-		lev:axis = "Z" ;
-	double lat(lat) ;
-		lat:units = "degrees_north" ;
-		lat:standard_name = "latitude" ;
-		lat:axis = "Y" ;
-	double lon(lon) ;
-		lon:units = "degrees_east" ;
-		lon:standard_name = "longitude" ;
-		lon:axis = "X" ;
-	float temperature(time, lev, lat, lon) ;
-		temperature:units = "K" ;
-		temperature:standard_name = "air_temperature" ;
-		temperature:long_name = "Air Temperature" ;
-		temperature:cell_methods = "time: mean" ;
-	float precipitation(time, lat, lon) ;
-		precipitation:units = "kg m-2 s-1" ;
-		precipitation:standard_name = "precipitation_flux" ;
-		precipitation:long_name = "Precipitation" ;
+    double time(time) ;
+        time:units = "days since 2000-01-01 00:00:00" ;
+        time:calendar = "gregorian" ;
+        time:standard_name = "time" ;
+        time:axis = "T" ;
+    float lev(lev) ;
+        lev:units = "hPa" ;
+        lev:positive = "down" ;
+        lev:standard_name = "air_pressure" ;
+        lev:axis = "Z" ;
+    double lat(lat) ;
+        lat:units = "degrees_north" ;
+        lat:standard_name = "latitude" ;
+        lat:axis = "Y" ;
+    double lon(lon) ;
+        lon:units = "degrees_east" ;
+        lon:standard_name = "longitude" ;
+        lon:axis = "X" ;
+    float temperature(time, lev, lat, lon) ;
+        temperature:units = "K" ;
+        temperature:standard_name = "air_temperature" ;
+        temperature:long_name = "Air Temperature" ;
+        temperature:cell_methods = "time: mean" ;
+    float precipitation(time, lat, lon) ;
+        precipitation:units = "kg m-2 s-1" ;
+        precipitation:standard_name = "precipitation_flux" ;
+        precipitation:long_name = "Precipitation" ;
 
 // global attributes:
-		:Conventions = "CF-1.8" ;
-		:title = "Climate Model Output" ;
-		:institution = "DKRZ" ;
-		:source = "Climate Model v2.0" ;
-		:history = "Created 2024-01-01" ;
+        :Conventions = "CF-1.8" ;
+        :title = "Climate Model Output" ;
+        :institution = "DKRZ" ;
+        :source = "Climate Model v2.0" ;
+        :history = "Created 2024-01-01" ;
 }
 """
 

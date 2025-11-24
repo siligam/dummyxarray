@@ -18,28 +18,28 @@ def simple_ncdump_header():
     return """
 netcdf example {
 dimensions:
-	time = 12 ;
-	lat = 64 ;
-	lon = 128 ;
+    time = 12 ;
+    lat = 64 ;
+    lon = 128 ;
 variables:
-	double time(time) ;
-		time:units = "days since 2000-01-01" ;
-		time:calendar = "gregorian" ;
-	double lat(lat) ;
-		lat:units = "degrees_north" ;
-		lat:standard_name = "latitude" ;
-	double lon(lon) ;
-		lon:units = "degrees_east" ;
-		lon:standard_name = "longitude" ;
-	float temperature(time, lat, lon) ;
-		temperature:units = "K" ;
-		temperature:standard_name = "air_temperature" ;
-		temperature:long_name = "Air Temperature" ;
+    double time(time) ;
+        time:units = "days since 2000-01-01" ;
+        time:calendar = "gregorian" ;
+    double lat(lat) ;
+        lat:units = "degrees_north" ;
+        lat:standard_name = "latitude" ;
+    double lon(lon) ;
+        lon:units = "degrees_east" ;
+        lon:standard_name = "longitude" ;
+    float temperature(time, lat, lon) ;
+        temperature:units = "K" ;
+        temperature:standard_name = "air_temperature" ;
+        temperature:long_name = "Air Temperature" ;
 
 // global attributes:
-		:Conventions = "CF-1.8" ;
-		:title = "Example Climate Data" ;
-		:institution = "DKRZ" ;
+        :Conventions = "CF-1.8" ;
+        :title = "Example Climate Data" ;
+        :institution = "DKRZ" ;
 }
 """
 
@@ -50,11 +50,11 @@ def unlimited_dim_header():
     return """
 netcdf example {
 dimensions:
-	time = UNLIMITED ; // (365 currently)
-	lat = 64 ;
+    time = UNLIMITED ; // (365 currently)
+    lat = 64 ;
 variables:
-	double time(time) ;
-		time:units = "days since 2000-01-01" ;
+    double time(time) ;
+        time:units = "days since 2000-01-01" ;
 }
 """
 

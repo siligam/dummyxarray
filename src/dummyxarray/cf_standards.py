@@ -5,10 +5,7 @@ metadata detection, validation, and attribute setting based on
 community-agreed standards.
 """
 
-import warnings
-from typing import Any, Dict, List, Optional
-
-import cf_xarray as cfxr
+from typing import Any, Dict, List
 
 
 def check_cf_xarray_available() -> bool:
