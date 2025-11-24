@@ -84,7 +84,7 @@ class IOMixin:
             Loaded dataset (without data arrays)
         """
         # Import here to avoid circular dependency
-        from dummyxarray.core import DummyArray
+        from .core import DummyArray
 
         with open(path) as f:
             spec = yaml.safe_load(f)
@@ -141,7 +141,7 @@ class IOMixin:
         {'time': 10, 'lat': 5}
         """
         # Import here to avoid circular dependency
-        from dummyxarray.core import DummyArray
+        from .core import DummyArray
 
         ds = cls()
 

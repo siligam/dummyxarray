@@ -8,12 +8,12 @@ through mixins.
 import numpy as np
 
 # Import mixins
-from dummyxarray.cf_compliance import CFComplianceMixin
-from dummyxarray.data_generation import DataGenerationMixin
-from dummyxarray.history import HistoryMixin
-from dummyxarray.io import IOMixin
-from dummyxarray.provenance import ProvenanceMixin
-from dummyxarray.validation import ValidationMixin
+from .cf_compliance import CFComplianceMixin
+from .data_generation import DataGenerationMixin
+from .history import HistoryMixin
+from .io import IOMixin
+from .provenance import ProvenanceMixin
+from .validation import ValidationMixin
 
 
 class DummyArray:
