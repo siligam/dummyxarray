@@ -58,30 +58,30 @@ from dummyxarray import from_ncdump_header
 header = """
 netcdf climate_data {
 dimensions:
-	time = UNLIMITED ; // (365 currently)
-	lat = 64 ;
-	lon = 128 ;
+    time = UNLIMITED ; // (365 currently)
+    lat = 64 ;
+    lon = 128 ;
 variables:
-	double time(time) ;
-		time:units = "days since 2000-01-01" ;
-		time:calendar = "gregorian" ;
-		time:axis = "T" ;
-	double lat(lat) ;
-		lat:units = "degrees_north" ;
-		lat:standard_name = "latitude" ;
-		lat:axis = "Y" ;
-	double lon(lon) ;
-		lon:units = "degrees_east" ;
-		lon:standard_name = "longitude" ;
-		lon:axis = "X" ;
-	float temperature(time, lat, lon) ;
-		temperature:units = "K" ;
-		temperature:standard_name = "air_temperature" ;
-		temperature:long_name = "Air Temperature" ;
+    double time(time) ;
+        time:units = "days since 2000-01-01" ;
+        time:calendar = "gregorian" ;
+        time:axis = "T" ;
+    double lat(lat) ;
+        lat:units = "degrees_north" ;
+        lat:standard_name = "latitude" ;
+        lat:axis = "Y" ;
+    double lon(lon) ;
+        lon:units = "degrees_east" ;
+        lon:standard_name = "longitude" ;
+        lon:axis = "X" ;
+    float temperature(time, lat, lon) ;
+        temperature:units = "K" ;
+        temperature:standard_name = "air_temperature" ;
+        temperature:long_name = "Air Temperature" ;
 
 // global attributes:
-		:Conventions = "CF-1.8" ;
-		:title = "Climate Model Output" ;
+        :Conventions = "CF-1.8" ;
+        :title = "Climate Model Output" ;
 }
 """
 
