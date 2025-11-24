@@ -1,0 +1,75 @@
+dimensions:
+  time: 365
+  lev: 5
+  lat: 64
+  lon: 128
+coordinates:
+  time:
+    dims:
+    - time
+    attrs:
+      units: days since 2000-01-01 00:00:00
+      calendar: gregorian
+      standard_name: time
+      axis: T
+    encoding: {}
+    has_data: true
+  lev:
+    dims:
+    - lev
+    attrs:
+      units: hPa
+      positive: down
+      standard_name: air_pressure
+      axis: Z
+    encoding: {}
+    has_data: true
+  lat:
+    dims:
+    - lat
+    attrs:
+      units: degrees_north
+      standard_name: latitude
+      axis: Y
+    encoding: {}
+    has_data: true
+  lon:
+    dims:
+    - lon
+    attrs:
+      units: degrees_east
+      standard_name: longitude
+      axis: X
+    encoding: {}
+    has_data: true
+variables:
+  temperature:
+    dims:
+    - time
+    - lev
+    - lat
+    - lon
+    attrs:
+      units: K
+      standard_name: air_temperature
+      long_name: Air Temperature
+      cell_methods: 'time: mean'
+    encoding: {}
+    has_data: true
+  precipitation:
+    dims:
+    - time
+    - lat
+    - lon
+    attrs:
+      units: kg m-2 s-1
+      standard_name: precipitation_flux
+      long_name: Precipitation
+    encoding: {}
+    has_data: true
+attrs:
+  Conventions: CF-1.8
+  title: Climate Model Output
+  institution: DKRZ
+  source: Climate Model v2.0
+  history: Created 2024-01-01

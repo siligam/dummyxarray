@@ -65,6 +65,7 @@ nav:
       - Basic Usage: user-guide/basic-usage.md
       - CF Compliance: user-guide/cf-compliance.md
       - History Tracking: user-guide/history-tracking.md
+      - ncdump Import: user-guide/ncdump-import.md
       - Validation: user-guide/validation.md
       - Encoding: user-guide/encoding.md
       - YAML Export: user-guide/yaml-export.md
