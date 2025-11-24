@@ -13,6 +13,7 @@ from .cf_standards import CFStandardsMixin
 from .data_generation import DataGenerationMixin
 from .history import HistoryMixin
 from .io import IOMixin
+from .mixins.file_tracker import FileTrackerMixin
 from .provenance import ProvenanceMixin
 from .validation import ValidationMixin
 
@@ -227,6 +228,7 @@ class DummyDataset(
     IOMixin,
     ValidationMixin,
     DataGenerationMixin,
+    FileTrackerMixin,
 ):
     """
     A dummy xarray-like dataset for building metadata specifications.
@@ -335,7 +337,8 @@ class DummyDataset(
         For other names, this could be extended to allow setting coords/variables.
         """
         # Internal attributes that should be set normally
-        if name in ("dims", "coords", "variables", "attrs", "_history"):
+        # Allow private attributes (starting with _) for mixins
+        if name in ("dims", "coords", "variables", "attrs", "_history") or name.startswith("_"):
             object.__setattr__(self, name, value)
         else:
             # For now, raise an error to avoid confusion
@@ -772,3 +775,43 @@ class DummyDataset(
                     self.variables[new_name] = self.variables.pop(old_name)
 
         return self
+
+    @classmethod
+    def open_mfdataset(cls, paths, concat_dim="time", combine="nested", **kwargs):
+        """Open multiple files as a single DummyDataset with file tracking.
+
+        This class method reads metadata from multiple NetCDF files and combines them
+        into a single DummyDataset, tracking which files contribute to which
+        coordinate ranges along the concatenation dimension.
+
+        Parameters
+        ----------
+        paths : str or list of str
+            Either a glob pattern (e.g., "data/*.nc") or a list of file paths
+        concat_dim : str, optional
+            The dimension along which to concatenate files (default: "time")
+        combine : str, optional
+            How to combine datasets. Currently supports "nested" (default)
+        **kwargs : optional
+            Additional keyword arguments (reserved for future use)
+
+        Returns
+        -------
+        DummyDataset
+            A DummyDataset with metadata from all files and file tracking enabled
+
+        Examples
+        --------
+        >>> ds = DummyDataset.open_mfdataset("data/*.nc", concat_dim="time")
+        >>> files = ds.get_source_files(time=slice(0, 10))
+        >>> print(files)
+        ['data/file1.nc', 'data/file2.nc']
+
+        See Also
+        --------
+        enable_file_tracking : Enable file tracking on an existing dataset
+        get_source_files : Query which files contain specific coordinate ranges
+        """
+        from .mfdataset import open_mfdataset
+
+        return open_mfdataset(paths, concat_dim=concat_dim, combine=combine, **kwargs)
