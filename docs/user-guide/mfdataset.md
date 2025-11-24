@@ -53,6 +53,151 @@ print(f"Variables: {info['metadata']['variables']}")
 print(f"Dimensions: {info['metadata']['dims']}")
 ```
 
+## Automatic Frequency Inference
+
+When opening files with time coordinates, DummyDataset automatically infers and stores the time
+frequency in the coordinate attributes:
+
+```python
+# Open files with time coordinates
+ds = DummyDataset.open_mfdataset("hourly_*.nc", concat_dim="time")
+
+# Frequency is automatically detected and stored
+print(ds.coords['time'].attrs['frequency'])  # "1H"
+
+# Works with various frequencies
+# - Hourly: "1H", "3H", "6H", "12H"
+# - Daily: "1D"
+# - Monthly: "1M"
+# - Sub-hourly: "15T" (minutes), "30S" (seconds)
+```
+
+**Requirements for frequency inference:**
+
+- Time coordinate must have CF-compliant `units` attribute (e.g., "hours since 2000-01-01")
+- Time values must be regularly spaced
+- At least 2 time values in the coordinate
+
+**Calendar support:**
+
+The frequency inference respects the `calendar` attribute if present, supporting all cftime calendars:
+
+- `standard` (Gregorian, default)
+- `noleap` (365-day)
+- `360_day`
+- `julian`
+- And all other cftime calendars
+
+## Time-Based Grouping
+
+Once files are opened with frequency inference, you can group the dataset by time periods using
+`groupby_time()`. This creates multiple metadata-only datasets, each representing a time period:
+
+```python
+# Open 100 years of hourly data
+ds = DummyDataset.open_mfdataset("hourly_*.nc", concat_dim="time")
+
+# Group into decades
+decades = ds.groupby_time('10Y')
+
+print(f"Number of decades: {len(decades)}")  # 10
+
+# Each decade is a separate DummyDataset
+decade_0 = decades[0]
+print(decade_0.coords['time'].attrs['units'])
+# "hours since 2000-01-01 00:00:00"
+
+print(decade_0.dims['time'])
+# ~87600 (10 years * 365.25 days * 24 hours)
+```
+
+### Supported Grouping Frequencies
+
+```python
+# Years
+decades = ds.groupby_time('10Y')
+quinquennials = ds.groupby_time('5Y')
+annual = ds.groupby_time('1Y')
+
+# Months
+quarterly = ds.groupby_time('3M')
+monthly = ds.groupby_time('1M')
+
+# Days
+weekly = ds.groupby_time('7D')
+daily = ds.groupby_time('1D')
+
+# Hours (for high-frequency data)
+six_hourly = ds.groupby_time('6H')
+```
+
+### Unit Normalization
+
+By default, `groupby_time()` normalizes the time units for each group to start at the group's
+beginning:
+
+```python
+# With normalization (default)
+decades = ds.groupby_time('10Y', normalize_units=True)
+print(decades[0].coords['time'].attrs['units'])
+# "hours since 2000-01-01 00:00:00"
+
+print(decades[1].coords['time'].attrs['units'])
+# "hours since 2010-01-01 00:00:00"
+
+# Without normalization (keeps original units)
+decades = ds.groupby_time('10Y', normalize_units=False)
+# All groups keep the original units from the first file
+```
+
+### File Tracking in Groups
+
+File tracking information is preserved in grouped datasets:
+
+```python
+decades = ds.groupby_time('10Y')
+
+# Query which files are in the first decade
+files = decades[0].get_source_files()
+print(f"Files in decade 0: {files}")
+# ['hourly_2000.nc', 'hourly_2001.nc', ..., 'hourly_2009.nc']
+```
+
+### Use Cases
+
+**Climate data analysis planning:**
+
+```python
+# Open century of daily climate data
+ds = DummyDataset.open_mfdataset("tas_day_*.nc", concat_dim="time")
+
+# Group into decades for analysis
+decades = ds.groupby_time('10Y')
+
+# Plan processing for each decade
+for i, decade in enumerate(decades):
+    start_year = 1900 + i * 10
+    print(f"Decade {start_year}s:")
+    print(f"  Time steps: {decade.dims['time']}")
+    print(f"  Files: {len(decade.get_source_files())}")
+    print(f"  Variables: {list(decade.variables.keys())}")
+```
+
+**Seasonal grouping:**
+
+```python
+# Open annual data
+ds = DummyDataset.open_mfdataset("data_*.nc", concat_dim="time")
+
+# Group by season (3 months)
+seasons = ds.groupby_time('3M')
+
+# Process each season
+for i, season in enumerate(seasons):
+    season_name = ['DJF', 'MAM', 'JJA', 'SON'][i % 4]
+    print(f"{season_name}: {season.dims['time']} timesteps")
+```
+
 ## Manual File Tracking
 
 You can also manually track files without opening them:

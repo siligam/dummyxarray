@@ -85,9 +85,8 @@ def test_get_source_files(temp_netcdf_files):
     """Test querying source files by coordinate range."""
     ds = DummyDataset.open_mfdataset(temp_netcdf_files, concat_dim="time")
 
-    # Note: The test files use datetime64 coordinates, but we're querying with integers
-    # The current implementation returns all files when types don't match
-    # This is a safe default - users should query with compatible types
+    # Note: Files are opened with decode_times=False, so coordinates are numeric
+    # This allows proper range queries
 
     # Query all files (no slice)
     files = ds.get_source_files()
@@ -97,10 +96,9 @@ def test_get_source_files(temp_netcdf_files):
     files = ds.get_source_files(time=slice(None, None))
     assert len(files) == 3
 
-    # For now, querying with incompatible types returns all files
-    # This is documented behavior - users should use compatible types
+    # Query specific range (should return only overlapping files)
     files = ds.get_source_files(time=slice(0, 10))
-    assert len(files) == 3  # Returns all due to type mismatch
+    assert len(files) >= 1  # At least the first file
 
 
 def test_open_mfdataset_glob_pattern(tmp_path):
@@ -165,3 +163,129 @@ def test_manual_file_tracking():
     info = ds.get_file_info("file1.nc")
     assert info["coord_range"] == (0, 10)
     assert info["concat_dim"] == "time"
+
+
+def test_frequency_inference(tmp_path):
+    """Test automatic frequency inference for time coordinates."""
+    import numpy as np
+    import xarray as xr
+
+    # Create hourly data
+    filepath = tmp_path / "hourly_data.nc"
+    time = np.arange(0, 24)  # 24 hours
+    ds_xr = xr.Dataset(
+        {
+            "temperature": (["time", "lat", "lon"], np.random.rand(24, 10, 10)),
+        },
+        coords={
+            "time": time,
+            "lat": np.linspace(-90, 90, 10),
+            "lon": np.linspace(-180, 180, 10),
+        },
+    )
+    ds_xr["time"].attrs["units"] = "hours since 2000-01-01 00:00:00"
+    ds_xr["time"].attrs["calendar"] = "standard"
+    ds_xr.to_netcdf(filepath)
+
+    # Open with mfdataset
+    ds = DummyDataset.open_mfdataset([str(filepath)], concat_dim="time")
+
+    # Check frequency was inferred
+    assert "frequency" in ds.coords["time"].attrs
+    assert ds.coords["time"].attrs["frequency"] == "1H"
+
+
+def test_groupby_time_decades(tmp_path):
+    """Test grouping dataset by decades."""
+    import numpy as np
+    import xarray as xr
+
+    # Create 30 years of daily data (3 files, 10 years each)
+    files = []
+    for i in range(3):
+        filepath = tmp_path / f"data_{i}.nc"
+        start_year = 2000 + i * 10
+        # 10 years * 365 days (simplified, no leap years)
+        time = np.arange(0, 3650)
+        ds_xr = xr.Dataset(
+            {
+                "temperature": (["time", "lat"], np.random.rand(3650, 10)),
+            },
+            coords={
+                "time": time,
+                "lat": np.linspace(-90, 90, 10),
+            },
+        )
+        ds_xr["time"].attrs["units"] = f"days since {start_year}-01-01 00:00:00"
+        ds_xr["time"].attrs["calendar"] = "standard"
+        ds_xr.to_netcdf(filepath)
+        files.append(str(filepath))
+
+    # Open all files
+    ds = DummyDataset.open_mfdataset(files, concat_dim="time")
+
+    # Check total size
+    assert ds.dims["time"] == 10950  # 30 years * 365 days
+
+    # Group by decades
+    decades = ds.groupby_time("10Y", dim="time")
+
+    # Should have 3 decades
+    assert len(decades) == 3
+
+    # Check first decade
+    decade_0 = decades[0]
+    # Approximate: 10 years * 365.25 days (accounting for leap years)
+    assert 3650 <= decade_0.dims["time"] <= 3654
+    assert "2000-01-01" in decade_0.coords["time"].attrs["units"]
+
+    # Check second decade
+    decade_1 = decades[1]
+    assert 3650 <= decade_1.dims["time"] <= 3654
+    assert "2010-01-01" in decade_1.coords["time"].attrs["units"]
+
+
+def test_groupby_time_without_frequency():
+    """Test that groupby_time raises error without frequency attribute."""
+    ds = DummyDataset()
+    ds.add_dim("time", 100)
+    ds.add_coord("time", dims=["time"], attrs={"units": "days since 2000-01-01"})
+
+    # Should raise error because no frequency attribute
+    with pytest.raises(ValueError, match="no frequency attribute"):
+        ds.groupby_time("10Y")
+
+
+def test_groupby_time_monthly(tmp_path):
+    """Test grouping by months."""
+    import numpy as np
+    import xarray as xr
+
+    # Create 1 year of daily data
+    filepath = tmp_path / "daily_data.nc"
+    time = np.arange(0, 365)
+    ds_xr = xr.Dataset(
+        {
+            "temperature": (["time", "lat"], np.random.rand(365, 10)),
+        },
+        coords={
+            "time": time,
+            "lat": np.linspace(-90, 90, 10),
+        },
+    )
+    ds_xr["time"].attrs["units"] = "days since 2000-01-01 00:00:00"
+    ds_xr["time"].attrs["calendar"] = "standard"
+    ds_xr.to_netcdf(filepath)
+
+    # Open with mfdataset
+    ds = DummyDataset.open_mfdataset([str(filepath)], concat_dim="time")
+
+    # Group by months
+    months = ds.groupby_time("1M", dim="time")
+
+    # Should have 12 months
+    assert len(months) == 12
+
+    # Each month should have ~30 days (approximate)
+    for month in months:
+        assert 28 <= month.dims["time"] <= 31
