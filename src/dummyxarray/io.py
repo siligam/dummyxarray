@@ -43,7 +43,10 @@ class IOMixin:
         str
             JSON representation
         """
-        return json.dumps(self.to_dict(), indent=2, **kwargs)
+        # Set default indent if not provided
+        if "indent" not in kwargs:
+            kwargs["indent"] = 2
+        return json.dumps(self.to_dict(), **kwargs)
 
     def to_yaml(self):
         """
