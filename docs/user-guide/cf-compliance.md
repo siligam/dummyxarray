@@ -1,6 +1,7 @@
 # CF Compliance
 
-dummyxarray provides comprehensive support for CF (Climate and Forecast) conventions, helping you create metadata-compliant datasets.
+dummyxarray provides comprehensive support for CF (Climate and Forecast) conventions,
+helping you create metadata-compliant datasets.
 
 ## Overview
 

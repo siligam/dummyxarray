@@ -4,7 +4,9 @@ A lightweight xarray-like object for building dataset metadata specifications be
 
 ## Overview
 
-dummyxarray allows you to define the structure of your dataset including dimensions, coordinates, variables, and metadata before actually creating the xarray.Dataset with real data. This is particularly useful for:
+dummyxarray allows you to define the structure of your dataset including dimensions, coordinates,
+variables, and metadata before actually creating the xarray.Dataset with real data.
+This is particularly useful for:
 
 - **Dataset Planning**: Define your dataset structure before generating data
 - **Template Generation**: Create reusable dataset templates
@@ -16,6 +18,7 @@ dummyxarray allows you to define the structure of your dataset including dimensi
 ## Key Features
 
 ### Core Functionality
+
 ✅ **Metadata-first design** - Define structure before data  
 ✅ **xarray compatibility** - Convert to/from xarray.Dataset  
 ✅ **Automatic dimension inference** - Infer from data shape  
@@ -23,12 +26,14 @@ dummyxarray allows you to define the structure of your dataset including dimensi
 ✅ **Rich repr** - Interactive exploration in notebooks
 
 ### CF Compliance (Phase 1)
+
 ✅ **Axis detection** - Automatic X/Y/Z/T axis inference  
 ✅ **CF validation** - Check for CF convention compliance  
 ✅ **Standard names** - Support for CF standard_name vocabulary  
 ✅ **Dimension ordering** - Validate T, Z, Y, X ordering
 
 ### History & Provenance
+
 ✅ **Operation tracking** - Record all dataset modifications  
 ✅ **History export** - Export as Python, JSON, or YAML  
 ✅ **History visualization** - Text, DOT, or Mermaid diagrams  
@@ -36,12 +41,14 @@ dummyxarray allows you to define the structure of your dataset including dimensi
 ✅ **History replay** - Recreate datasets from operation history
 
 ### Data Generation & I/O
+
 ✅ **Smart data generation** - Populate with realistic random data  
 ✅ **Multiple formats** - Export to YAML, JSON, Zarr, NetCDF  
 ✅ **Template support** - Save/load dataset specifications  
 ✅ **Encoding support** - dtype, chunks, compression settings
 
 ### Architecture
+
 ✅ **Modular design** - Mixin-based architecture for maintainability  
 ✅ **Well-tested** - 159 tests with comprehensive coverage  
 ✅ **Type-safe** - Clear API with validation
@@ -92,10 +99,12 @@ ds.to_zarr("output.zarr")
 ## Documentation
 
 ### Getting Started
+
 - [Installation Guide](getting-started/installation.md) - Set up dummyxarray
 - [Quick Start](getting-started/quickstart.md) - Hands-on introduction
 
 ### User Guide
+
 - [Basic Usage](user-guide/basic-usage.md) - Core concepts and workflows
 - [CF Compliance](user-guide/cf-compliance.md) - Working with CF conventions
 - [History Tracking](user-guide/history-tracking.md) - Track and replay operations
@@ -104,10 +113,12 @@ ds.to_zarr("output.zarr")
 - [YAML Export](user-guide/yaml-export.md) - Save and load specifications
 
 ### API Reference
+
 - [DummyDataset](api/dataset.md) - Main dataset class
 - [DummyArray](api/array.md) - Array class for variables and coordinates
 
-### Architecture
+### Project Architecture
+
 - [Design Overview](architecture.md) - Mixin-based architecture
 - [Testing](../tests/README.md) - Test structure and fixtures
 

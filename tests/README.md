@@ -4,7 +4,7 @@ This directory contains all tests for dummyxarray, organized by test type and mo
 
 ## Directory Structure
 
-```
+```text
 tests/
 ├── conftest.py                    # Shared fixtures and pytest configuration
 ├── unit/                          # Unit tests (per module)

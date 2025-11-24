@@ -142,4 +142,5 @@ spec_dict = ds.to_dict()
 
 ## Limitations
 
-Note that the actual data arrays are not saved to YAML, only the metadata and structure. The `has_data` field indicates whether data was present when the spec was created.
+Note that the actual data arrays are not saved to YAML, only the metadata and structure.
+The `has_data` field indicates whether data was present when the spec was created.

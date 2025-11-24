@@ -6,7 +6,8 @@
 
 **A lightweight xarray-like object for building dataset metadata specifications.**
 
-Define your dataset structure, metadata, and encoding before creating the actual data arrays. Perfect for planning datasets, generating templates, and ensuring CF compliance.
+Define your dataset structure, metadata, and encoding before creating the actual data arrays.
+Perfect for planning datasets, generating templates, and ensuring CF compliance.
 
 ## Features
 

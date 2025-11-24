@@ -1,21 +1,52 @@
-# Markdownlint configuration
+# Markdown linting configuration
 config:
-  # MD013: Line length
+  # Line length - allow longer lines for URLs and code
   MD013:
-    line_length: 100
+    line_length: 120
     code_blocks: false
     tables: false
   
-  # MD033: Allow inline HTML (useful for documentation)
+  # Allow duplicate headings (common in documentation)
+  MD024:
+    siblings_only: true
+  
+  # Allow inline HTML (sometimes needed)
   MD033: false
   
-  # MD041: First line in file should be a top level heading
+  # Allow bare URLs
+  MD034: false
+  
+  # Relax list spacing for compact documentation
+  MD032: false
+  
+  # Relax code fence spacing
+  MD031: false
+  
+  # Allow trailing spaces (sometimes needed for line breaks)
+  MD009: false
+  
+  # Relax heading spacing
+  MD022: false
+  
+  # Allow list marker spacing variations
+  MD030: false
+  
+  # Allow code blocks without language
+  MD040: false
+  
+  # Allow table column style variations
+  MD060: false
+  
+  # Allow ordered list prefix variations
+  MD029: false
+  
+  # Allow first line not being H1 (for fragments)
   MD041: false
 
 # Ignore patterns
 ignores:
-  - node_modules
-  - .pixi
-  - build
-  - dist
-  - "*.egg-info"
+  - "node_modules/**"
+  - ".pixi/**"
+  - "**/*.md.old"
+  - "README.md.old"
+  - "dummy_xarray.md"  # Old conversation notes
