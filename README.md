@@ -1,461 +1,112 @@
-# Dummy Xarray
+# dummyxarray
 
-[![CI](https://github.com/yourusername/fakexarray/workflows/CI/badge.svg)](https://github.com/yourusername/fakexarray/actions/workflows/ci.yml)
-[![Documentation](https://img.shields.io/badge/docs-mkdocs-blue)](https://yourusername.github.io/fakexarray/)
+[![CI](https://github.com/yourusername/fakexarray/workflows/CI/badge.svg)](https://github.com/yourusername/fakexarray/actions)
 [![Python Version](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A lightweight xarray-like object for building dataset metadata specifications before creating actual xarray datasets.
+**A lightweight xarray-like object for building dataset metadata specifications.**
+
+Define your dataset structure, metadata, and encoding before creating the actual data arrays. Perfect for planning datasets, generating templates, and ensuring CF compliance.
 
 ## Features
 
-✅ **Define dimensions and their sizes**  
-✅ **Add variables and coordinates with metadata**  
-✅ **Automatic dimension inference from data**  
-✅ **xarray-style attribute access** (`ds.time`, `ds.temperature`)  
-✅ **Rich repr for interactive exploration** (DummyDataset and DummyArray)  
-✅ **Populate with random but meaningful data** (for testing)  
-✅ **Create from existing xarray.Dataset** (extract metadata)  
-✅ **Operation history tracking** (record, export, and replay operations)  
-✅ **CF-compliant metadata** (units, long_name, standard_name)  
-✅ **Encoding specifications** (dtype, chunks, compression)  
-✅ **Validation** (dimension consistency, coordinate checks)  
-✅ **Export to YAML/JSON** (human-readable specifications)  
-✅ **Convert to xarray.Dataset** (when ready for real data)  
-✅ **Write directly to Zarr** (with optimal chunking and compression)
+- 📋 **Metadata-first design** - Define structure before data
+- 🔄 **xarray compatibility** - Convert to/from xarray.Dataset
+- ✅ **CF compliance** - Axis detection, validation, standard names
+- 📊 **Smart data generation** - Populate with realistic random data
+- 📝 **History tracking** - Record and replay all operations
+- 💾 **Multiple formats** - Export to YAML, JSON, Zarr, NetCDF
+- 🎯 **Validation** - Catch errors before expensive operations
 
 ## Installation
 
-### Using Pixi (Recommended)
-
 ```bash
-# Install dependencies
+# Using pixi (recommended)
 pixi install
 
-# Run tests
-pixi run test
-
-# Run examples
-pixi run example
-```
-
-### Using pip
-
-```bash
+# Using pip
 pip install -r requirements.txt
 ```
 
 ## Quick Start
 
-### 1. Create a Dataset with Metadata
-
 ```python
-from dummy_xarray import DummyDataset
+from dummyxarray import DummyDataset
 
+# Create dataset structure
 ds = DummyDataset()
+ds.assign_attrs(Conventions="CF-1.8", title="My Dataset")
 
-# Set global attributes (xarray-compatible API)
-ds.assign_attrs(
-    title="Climate Model Output",
-    institution="DKRZ",
-    experiment="historical"
-)
-
-# Add dimensions
+# Add dimensions and coordinates
 ds.add_dim("time", 12)
 ds.add_dim("lat", 180)
 ds.add_dim("lon", 360)
 
-# Add coordinates
-ds.add_coord("lat", ["lat"], attrs={"units": "degrees_north"})
-ds.add_coord("lon", ["lon"], attrs={"units": "degrees_east"})
+ds.add_coord("time", dims=["time"], attrs={"units": "days since 2000-01-01"})
+ds.add_coord("lat", dims=["lat"], attrs={"units": "degrees_north"})
+ds.add_coord("lon", dims=["lon"], attrs={"units": "degrees_east"})
 
-# Add variables
+# Add variable with encoding
 ds.add_variable(
-    "tas",
-    ["time", "lat", "lon"],
-    attrs={"long_name": "Near-Surface Air Temperature", "units": "K"}
+    "temperature",
+    dims=["time", "lat", "lon"],
+    attrs={"standard_name": "air_temperature", "units": "K"},
+    encoding={"dtype": "float32", "chunks": (6, 32, 64)}
 )
 
-# Export to YAML
-print(ds.to_yaml())
-```
+# Infer CF axis attributes
+ds.infer_axis()
+ds.set_axis_attributes()
 
-### 2. Automatic Dimension Inference
+# Validate CF compliance
+result = ds.validate_cf()
 
-```python
-import numpy as np
-
-ds = DummyDataset()
-
-# Provide data - dimensions are inferred automatically
-temp_data = np.random.rand(12, 64, 128)
-
-ds.add_variable(
-    "tas",
-    data=temp_data,
-    attrs={"units": "K", "long_name": "air_temperature"}
-)
-
-# Dimensions dim_0, dim_1, dim_2 are automatically created
-print(ds.dims)  # {'dim_0': 12, 'dim_1': 64, 'dim_2': 128}
-```
-
-### 3. Add Encoding for Zarr/NetCDF
-
-```python
-ds.add_variable(
-    "tas",
-    ["time", "lat", "lon"],
-    data=temp_data,
-    attrs={"long_name": "Temperature", "units": "K"},
-    encoding={
-        "dtype": "float32",
-        "chunks": (6, 32, 64),
-        "compressor": None,  # Can use zarr.Blosc() or similar
-    }
-)
-```
-
-### 4. Validate Dataset
-
-```python
-# Check for dimension mismatches, unknown dimensions, etc.
-ds.validate()
-```
-
-### 5. Convert to xarray.Dataset
-
-```python
-# Once you have data in all variables/coordinates
-xr_ds = ds.to_xarray()
-print(xr_ds)
-```
-
-### 6. Write to Zarr
-
-```python
-# Write directly to Zarr format with encoding applied
-ds.to_zarr("output.zarr")
-```
-
-### 7. Create from Existing xarray.Dataset
-
-```python
-import xarray as xr
-
-# Extract metadata from an existing xarray dataset
-existing_ds = xr.open_dataset("my_data.nc")
-dummy_ds = DummyDataset.from_xarray(existing_ds, include_data=False)
-
-# Save as template
-dummy_ds.save_yaml("template.yaml")
-```
-
-### 8. Populate with Random Data
-
-```python
-# Create structure without data
-ds = DummyDataset()
-ds.add_dim("time", 10)
-ds.add_dim("lat", 5)
-ds.add_coord("lat", ["lat"], attrs={"units": "degrees_north"})
-ds.add_variable("temperature", ["time", "lat"], 
-                attrs={"units": "K", "standard_name": "air_temperature"})
-
-# Populate with meaningful random data
+# Populate with realistic data
 ds.populate_with_random_data(seed=42)
 
-# Now has realistic data: temperature in Kelvin, lat from -90 to 90
-print(ds.variables["temperature"].data.mean())  # ~280 K
+# Convert to xarray or export
+xr_ds = ds.to_xarray()
+ds.to_zarr("output.zarr")
+ds.save_yaml("template.yaml")
 ```
-
-### 9. xarray-style Attribute Access
-
-```python
-# Access coordinates and variables as attributes (like xarray)
-ds.time                    # Same as ds.coords['time']
-ds.temperature             # Same as ds.variables['temperature']
-
-# Modify via attribute access
-ds.time.data = np.arange(10)
-ds.time.assign_attrs(standard_name="time", calendar="gregorian")
-
-# Or use dictionary-style access
-ds.temperature.attrs["cell_methods"] = "time: mean"
-
-# Inspect with rich repr
-print(ds.time)             # Shows dimensions, shape, dtype, data, attrs
-```
-
-### 10. Operation History Tracking
-
-```python
-# All operations are automatically recorded
-ds = DummyDataset()
-ds.add_dim("time", 10)
-ds.assign_attrs(title="Test Dataset")
-
-# Get the operation history
-history = ds.get_history()
-# [{'func': '__init__', 'args': {}},
-#  {'func': 'add_dim', 'args': {'name': 'time', 'size': 10}},
-#  {'func': 'assign_attrs', 'args': {'title': 'Test Dataset'}}]
-
-# Export history as executable Python code
-python_code = ds.export_history('python')
-# ds = DummyDataset()
-# ds.add_dim(name='time', size=10)
-# ds.assign_attrs(title='Test Dataset')
-
-# Export as JSON or YAML
-json_history = ds.export_history('json')
-yaml_history = ds.export_history('yaml')
-
-# Replay history to recreate the dataset
-new_ds = DummyDataset.replay_history(history)
-# or from JSON/YAML string
-new_ds = DummyDataset.replay_history(json_history)
-
-# Visualize the operation history
-print(ds.visualize_history(format='text'))
-# Dataset Construction History
-# ============================
-# 1. __init__()
-# 2. add_dim(name='time', size=10)
-# 3. assign_attrs(title='Test Dataset')
-# Summary:
-#   Total operations: 3
-#   Operation breakdown:
-#     __init__: 1
-#     add_dim: 1
-#     assign_attrs: 1
-
-# Export as DOT format for Graphviz
-dot_graph = ds.visualize_history(format='dot')
-# Can be rendered with: dot -Tpng graph.dot -o graph.png
-
-# Export as Mermaid diagram for documentation
-mermaid_diagram = ds.visualize_history(format='mermaid')
-# Works in GitHub, GitLab, and documentation tools
-```
-
-### 11. Save/Load Specifications
-
-```python
-# Save the dataset structure to YAML
-ds.save_yaml("dataset_spec.yaml")
-
-# Load it back later
-loaded_ds = DummyDataset.load_yaml("dataset_spec.yaml")
-```
-
-## Example Output (YAML)
-
-```yaml
-dimensions:
-  time: 12
-  lat: 180
-  lon: 360
-coordinates:
-  lat:
-    dims:
-    - lat
-    attrs:
-      units: degrees_north
-    has_data: false
-  lon:
-    dims:
-    - lon
-    attrs:
-      units: degrees_east
-    has_data: false
-variables:
-  tas:
-    dims:
-    - time
-    - lat
-    - lon
-    attrs:
-      long_name: Near-Surface Air Temperature
-      units: K
-    encoding:
-      dtype: float32
-      chunks: [6, 32, 64]
-    has_data: true
-attrs:
-  title: Climate Model Output
-  institution: DKRZ
-  experiment: historical
-```
-
-## Running Examples
-
-```bash
-pixi run example
-```
-
-This will run through all the example use cases including:
-- Basic metadata-only dataset creation
-- Automatic dimension inference
-- Encoding specifications
-- Validation
-- Conversion to xarray
-- Writing to Zarr
-- Loading from YAML
-
-## Development
-
-### Code Quality Tools
-
-The project uses pixi for managing development tasks:
-
-```bash
-# Format code (applies black and isort)
-pixi run format
-
-# Check formatting without modifying files
-pixi run check-format
-
-# Run linters (flake8 for Python, markdownlint for Markdown)
-pixi run lint
-
-# Run all checks (format check + lint)
-pixi run check
-
-# Run tests
-pixi run test
-```
-
-### Individual Tools
-
-```bash
-# Format Python code with black
-pixi run format-python
-
-# Sort imports with isort
-pixi run format-imports
-
-# Lint Python code with flake8
-pixi run lint-python
-
-# Lint Markdown files
-pixi run lint-markdown
-```
-
-### Configuration Files
-
-- `.flake8` - Flake8 linting configuration
-- `pyproject.toml` - Black and isort configuration
-- `.markdownlint-cli2.yaml` - Markdown linting rules
 
 ## Use Cases
 
-### 1. **Dataset Planning**
-Define your dataset structure before generating data. Export to YAML for documentation and review.
+**Dataset Planning** - Define structure and metadata before generating data
 
-### 2. **Template Generation**
-Create reusable dataset templates that can be loaded and populated with data later.
+**Template Generation** - Create reusable dataset specifications
 
-### 3. **CF-Compliance Preparation**
-Set up all required metadata (units, long_name, standard_name) before creating the actual dataset.
+**CF Compliance** - Ensure metadata follows CF conventions
 
-### 4. **Zarr Workflow**
-Define chunking and compression strategies, then write directly to Zarr with optimal settings.
+**Testing** - Generate realistic test datasets quickly
 
-### 5. **Metadata Validation**
-Catch dimension mismatches and missing coordinates early, before expensive data operations.
+**Documentation** - Export human-readable dataset specifications
 
-### 6. **Reproducible Workflows**
-Record all operations as a history, export as Python code, JSON, or YAML, and replay to recreate datasets. Perfect for documentation, version control, and sharing dataset specifications.
+## Documentation
 
-## API Reference
+- **[User Guide](docs/user-guide.md)** - Detailed usage examples
+- **[API Reference](docs/api.md)** - Complete API documentation
+- **[Examples](examples/)** - Working code examples
+- **[CF Compliance](docs/cf-compliance.md)** - CF convention support
 
-### DummyDataset
-
-**Methods:**
-- `assign_attrs(**kwargs)` - Set global attributes (xarray-compatible, returns self)
-- `set_global_attrs(**kwargs)` - Set global dataset attributes (legacy)
-- `add_dim(name, size)` - Add a dimension
-- `add_coord(name, dims, attrs, data, encoding)` - Add a coordinate variable
-- `add_variable(name, dims, attrs, data, encoding)` - Add a data variable
-- `populate_with_random_data(seed=None)` - Fill with meaningful random data
-- `validate(strict_coords=False)` - Validate dataset structure
-- `get_history()` - Get list of recorded operations
-- `export_history(format='json')` - Export history as JSON, YAML, or Python code
-- `visualize_history(format='text', **kwargs)` - Visualize history as text, DOT, or Mermaid
-- `replay_history(history)` - Recreate dataset from operation history (class method)
-- `to_dict()` - Export to dictionary
-- `to_json(**kwargs)` - Export to JSON string
-- `to_yaml()` - Export to YAML string
-- `save_yaml(path)` - Save specification to YAML file
-- `load_yaml(path)` - Load specification from YAML file (class method)
-- `from_xarray(xr_ds, include_data=True)` - Create from xarray.Dataset (class method)
-- `to_xarray(validate=True)` - Convert to xarray.Dataset
-- `to_zarr(store_path, mode='w', validate=True)` - Write to Zarr format
-
-### DummyArray
-
-Represents a single variable or coordinate with:
-- `dims` - List of dimension names
-- `attrs` - Metadata dictionary
-- `data` - Optional numpy array
-- `encoding` - Encoding parameters (dtype, chunks, compressor, etc.)
-
-**Methods:**
-- `assign_attrs(**kwargs)` - Set attributes (xarray-compatible, returns self)
-- `get_history()` - Get list of recorded operations
-- `replay_history(history)` - Recreate array from operation history
-- `infer_dims_from_data()` - Infer dimension names from data shape
-- `to_dict()` - Export to dictionary
-
-## Future Extensions
-
-Possible enhancements:
-- CF metadata helpers (standard_name, axis, bounds detection)
-- CMIP6 table-driven variable templates
-- Automatic bounds generation (lat_bnds, time_bnds)
-- Dimension registry with axis labels (X/Y/Z/T)
-- Plugin system for custom validators
-
-## Contributing
-
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-### Quick Start for Contributors
+## Development
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/fakexarray.git
-cd fakexarray
-
-# Install dependencies
-pixi install
-
 # Run tests
 pixi run test
 
-# Format and lint
+# Format code
 pixi run format
+
+# Lint code
+pixi run lint
+
+# Run all checks
 pixi run check
 ```
 
-## CI/CD
-
-The project uses GitHub Actions for continuous integration and deployment:
-
-- **CI Workflow**: Runs tests, linting, and formatting checks on all PRs and pushes
-- **Documentation Deployment**: Automatically deploys docs to GitHub Pages on main branch
-- **Release Workflow**: Creates GitHub releases and publishes to PyPI on version tags
-- **Dependency Updates**: Weekly automated dependency updates via Dependabot
-
-### Workflows
-
-- `.github/workflows/ci.yml` - Main CI pipeline (test, lint, docs build)
-- `.github/workflows/docs.yml` - Documentation deployment to GitHub Pages
-- `.github/workflows/release.yml` - Release automation and PyPI publishing
-- `.github/workflows/dependencies.yml` - Automated dependency updates
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](LICENSE) for details.
