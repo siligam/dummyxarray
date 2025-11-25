@@ -156,7 +156,7 @@ print(f"\nTotal operations with tracked changes: {len(prov_list)}")
 print("\n🔍 Finding when axis attributes were added:")
 for prov_entry in prov_list:
     if "modified" in prov_entry.get("provenance", {}):
-        for key, change in prov_entry["provenance"]["modified"].items():
+        for _key, change in prov_entry["provenance"]["modified"].items():
             if isinstance(change, dict) and "axis" in str(change):
                 print(f"  Operation {prov_entry['index']}: Added axis attribute")
                 break
