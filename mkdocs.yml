@@ -1,5 +1,6 @@
 site_name: Dummy Xarray
 site_description: A lightweight xarray-like object for building dataset metadata specifications
+site_url: https://siligam.github.io/dummyxarray/
 site_author: Pavan Siligam
 repo_url: https://github.com/siligam/dummyxarray
 repo_name: dummyxarray
@@ -20,6 +21,7 @@ theme:
         icon: material/brightness-4
         name: Switch to light mode
   features:
+    - navigation.instant
     - navigation.tabs
     - navigation.sections
     - navigation.expand
