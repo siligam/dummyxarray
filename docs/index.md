@@ -47,10 +47,18 @@ This is particularly useful for:
 ✅ **Template support** - Save/load dataset specifications  
 ✅ **Encoding support** - dtype, chunks, compression settings
 
+### Multi-File Dataset Support (Phase 2)
+
+✅ **Multi-file datasets** - Open multiple NetCDF files as one dataset  
+✅ **Automatic frequency inference** - Detect time frequency from coordinates  
+✅ **Time-based grouping** - Group datasets by decades, years, months  
+✅ **File tracking** - Track which files contain which data ranges  
+✅ **Metadata-only** - No data loading, only metadata operations
+
 ### Architecture
 
 ✅ **Modular design** - Mixin-based architecture for maintainability  
-✅ **Well-tested** - 159 tests with comprehensive coverage  
+✅ **Well-tested** - 188 tests with comprehensive coverage  
 ✅ **Type-safe** - Clear API with validation
 
 ## Quick Example
@@ -107,10 +115,13 @@ ds.to_zarr("output.zarr")
 
 - [Basic Usage](user-guide/basic-usage.md) - Core concepts and workflows
 - [CF Compliance](user-guide/cf-compliance.md) - Working with CF conventions
+- [CF Standards](user-guide/cf-standards.md) - CF standard names and vocabulary
+- [Multi-File Datasets](user-guide/mfdataset.md) - Work with multiple NetCDF files
 - [History Tracking](user-guide/history-tracking.md) - Track and replay operations
 - [Validation](user-guide/validation.md) - Validate dataset structure
 - [Encoding](user-guide/encoding.md) - Configure chunking and compression
 - [YAML Export](user-guide/yaml-export.md) - Save and load specifications
+- [ncdump Import](user-guide/ncdump-import.md) - Import from ncdump output
 
 ### API Reference
 
@@ -125,6 +136,7 @@ ds.to_zarr("output.zarr")
 ## Project Status
 
 **Phase 1 Complete**: CF compliance, history tracking, and modular architecture  
-**Phase 2 In Progress**: CMIP table integration and controlled vocabularies
+**Phase 2 Complete**: Multi-file datasets, time-based grouping, CF standards  
+**Future**: CMIP table integration and spatial grouping
 
 Contributions and feedback are welcome!

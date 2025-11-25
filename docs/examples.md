@@ -331,6 +331,34 @@ print(ds.time)
 #     calendar: gregorian
 ```
 
+## Multi-File Dataset Support
+
+Work with multiple NetCDF files as a single dataset:
+
+```python
+from dummyxarray import DummyDataset
+
+# Open multiple files as one dataset
+ds = DummyDataset.open_mfdataset("data/*.nc", concat_dim="time")
+
+# Frequency is automatically inferred
+print(ds.coords['time'].attrs['frequency'])  # e.g., "1H" for hourly
+
+# Group by time periods
+decades = ds.groupby_time('10Y')
+
+# Each decade is a separate DummyDataset
+for i, decade in enumerate(decades):
+    print(f"Decade {i}:")
+    print(f"  Time steps: {decade.dims['time']}")
+    print(f"  Time units: {decade.coords['time'].attrs['units']}")
+    print(f"  Source files: {len(decade.get_source_files())}")
+
+# Query which files contain specific time ranges
+files = ds.get_source_files(time=slice(0, 100))
+print(f"Files for first 100 timesteps: {files}")
+```
+
 ## More Examples
 
 For more examples, check out the example files in the repository:
@@ -338,6 +366,8 @@ For more examples, check out the example files in the repository:
 - `example.py` - Basic usage and core features
 - `example_from_xarray.py` - Extracting metadata from xarray datasets
 - `example_populate.py` - Data population with random data
+- `example_mfdataset.py` - Multi-file dataset support (old version)
+- `example_groupby_time.py` - Time-based grouping with 5 comprehensive examples
 - Basic usage examples
 - Automatic dimension inference
 - Encoding specifications
