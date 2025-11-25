@@ -8,9 +8,11 @@ The main class for creating and managing dataset metadata specifications.
 - **[HistoryMixin](mixins/history.md)** - Operation tracking and replay
 - **[ProvenanceMixin](mixins/provenance.md)** - Track what changed in operations
 - **[CFComplianceMixin](mixins/cf-compliance.md)** - CF convention support
+- **CFStandardsMixin** - CF standard names and vocabulary
 - **[IOMixin](mixins/io.md)** - Serialization and format conversion
 - **[ValidationMixin](mixins/validation.md)** - Dataset structure validation
 - **[DataGenerationMixin](mixins/data-generation.md)** - Generate realistic random data
+- **FileTrackerMixin** - Track source files in multi-file datasets
 
 ## Class Reference
 

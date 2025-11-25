@@ -14,7 +14,9 @@ tests/
 │   ├── test_cf_compliance.py     # CFComplianceMixin tests
 │   ├── test_io.py                # IOMixin tests
 │   ├── test_validation.py        # ValidationMixin tests
-│   └── test_data_generation.py   # DataGenerationMixin tests
+│   ├── test_data_generation.py   # DataGenerationMixin tests
+│   ├── test_mfdataset.py         # Multi-file dataset support tests
+│   └── test_ncdump_parser.py     # NetCDF metadata parser tests
 ├── integration/                   # Integration tests (workflows)
 │   └── test_workflows.py         # End-to-end workflow tests
 └── fixtures/                      # Test data and fixtures
@@ -66,6 +68,17 @@ Test individual modules and mixins in isolation:
   - Coordinate data generation
   - Variable data generation
   - Metadata-based generation
+
+- **test_mfdataset.py**: Multi-file dataset support
+  - Opening multiple NetCDF files
+  - Frequency inference
+  - Time-based grouping
+  - File tracking and queries
+
+- **test_ncdump_parser.py**: NetCDF metadata parser
+  - Parsing ncdump output
+  - Dimension extraction
+  - Variable and attribute parsing
 
 ### Integration Tests (`tests/integration/`)
 
@@ -218,9 +231,9 @@ class TestWorkflow:
 
 ## Test Coverage
 
-Current coverage: **159 tests** across all modules
+Current coverage: **188 tests** across all modules
 
-- Unit tests: ~130 tests
-- Integration tests: ~29 tests
+- Unit tests: ~160 tests
+- Integration tests: ~28 tests
 
 Target: >90% code coverage

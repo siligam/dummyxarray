@@ -16,29 +16,34 @@ The codebase follows these principles:
 
 ```
 src/dummyxarray/
-├── __init__.py                    # Public API exports
-├── core.py (772 lines)            # Core classes and API
-├── history.py (331 lines)         # HistoryMixin
-├── provenance.py (157 lines)      # ProvenanceMixin
-├── cf_compliance.py (318 lines)   # CFComplianceMixin
-├── io.py (243 lines)              # IOMixin
-├── validation.py (82 lines)       # ValidationMixin
-└── data_generation.py (169 lines) # DataGenerationMixin
+├── __init__.py (9 lines)           # Public API exports
+├── core.py (896 lines)             # Core classes (DummyArray, DummyDataset)
+├── history.py (331 lines)          # HistoryMixin
+├── provenance.py (157 lines)       # ProvenanceMixin
+├── cf_compliance.py (318 lines)    # CFComplianceMixin
+├── cf_standards.py (388 lines)     # CFStandardsMixin
+├── io.py (246 lines)               # IOMixin
+├── validation.py (82 lines)        # ValidationMixin
+├── data_generation.py (169 lines)  # DataGenerationMixin
+├── mfdataset.py (454 lines)        # Multi-file dataset support
+├── time_utils.py (346 lines)       # Time calculation utilities
+└── ncdump_parser.py (280 lines)    # NetCDF metadata parser
 ```
 
-### Before Refactoring
+### Architecture Evolution
 
-- **Single file**: 2041 lines
-- **Hard to navigate**: Everything in one place
-- **Difficult to maintain**: Large monolithic class
-- **Will grow**: Phase 2 would push to 3000+ lines
+#### Phase 1 (Initial Refactoring)
 
-### After Refactoring
+- **Before**: Single file with 2041 lines
+- **After**: 7 focused modules, average ~230 lines each
 
-- **7 focused modules**: Average ~230 lines each
-- **Easy to navigate**: Clear module boundaries
-- **Easy to maintain**: Each module has one responsibility
-- **Scalable**: New features = new mixins
+#### Current State (Phase 2)
+
+- **12 modules**: Total 3,676 lines
+- **Average**: ~306 lines per module
+- **New capabilities**: Multi-file datasets, time-based grouping, CF standards
+- **Maintainability**: Each module remains focused and testable
+- **Scalability**: New features added as new modules (mfdataset, time_utils)
 
 ## Core Classes
 
@@ -72,9 +77,11 @@ class DummyDataset(
     HistoryMixin,
     ProvenanceMixin,
     CFComplianceMixin,
+    CFStandardsMixin,
     IOMixin,
     ValidationMixin,
     DataGenerationMixin,
+    FileTrackerMixin,
 ):
     ...
 ```
@@ -147,6 +154,22 @@ class DummyDataset(
 - Units (degrees_north, days since, etc.)
 - Standard names (latitude, longitude, time)
 
+### CFStandardsMixin
+
+**Purpose**: CF standard names and vocabulary support
+
+**Location**: `cf_standards.py` (388 lines)
+
+**Methods**:
+- `validate_standard_names()` - Validate CF standard names
+- `get_standard_name_info()` - Get standard name metadata
+- `suggest_standard_names()` - Suggest appropriate standard names
+
+**Features**:
+- Access to CF standard name table
+- Validation against official CF vocabulary
+- Metadata lookup for standard names
+
 ### IOMixin
 
 **Purpose**: Serialization and format conversion
@@ -201,6 +224,24 @@ class DummyDataset(
 - Precipitation: Non-negative, skewed distribution
 - Wind: Appropriate ranges for components
 
+### FileTrackerMixin
+
+**Purpose**: Track source files in multi-file datasets
+
+**Location**: `core.py` (part of core module)
+
+**Methods**:
+- `enable_file_tracking()` - Enable file tracking
+- `add_file_source()` - Register a file source
+- `get_source_files()` - Query files by coordinate range
+- `get_file_info()` - Get metadata for a specific file
+- `get_all_file_info()` - Get all tracked files
+
+**Features**:
+- Track which files contain which coordinate ranges
+- Query files for specific time/coordinate slices
+- Preserve file provenance in grouped datasets
+
 ## Method Resolution Order (MRO)
 
 Python resolves methods left-to-right through the inheritance chain:
@@ -208,7 +249,8 @@ Python resolves methods left-to-right through the inheritance chain:
 ```python
 DummyDataset.__mro__
 # (DummyDataset, HistoryMixin, ProvenanceMixin, CFComplianceMixin,
-#  IOMixin, ValidationMixin, DataGenerationMixin, object)
+#  CFStandardsMixin, IOMixin, ValidationMixin, DataGenerationMixin,
+#  FileTrackerMixin, object)
 ```
 
 **Important**: No method name conflicts exist between mixins (verified during development).
@@ -271,12 +313,14 @@ tests/
 │   ├── test_cf_compliance.py     # CFComplianceMixin
 │   ├── test_io.py                # IOMixin
 │   ├── test_validation.py        # ValidationMixin
-│   └── test_data_generation.py   # DataGenerationMixin
+│   ├── test_data_generation.py   # DataGenerationMixin
+│   ├── test_mfdataset.py         # Multi-file dataset support
+│   └── test_ncdump_parser.py     # NetCDF metadata parser
 └── integration/                   # Integration tests
     └── test_workflows.py         # End-to-end workflows
 ```
 
-**Total**: 159 tests with comprehensive coverage
+**Total**: 188 tests with comprehensive coverage
 
 See [Testing Documentation](testing.md) for details.
 
@@ -318,14 +362,70 @@ Class methods for alternative construction:
 - **Data generation**: Uses numpy for efficiency
 - **Serialization**: JSON/YAML are human-readable but slower than pickle
 
+## Utility Modules
+
+### time_utils.py
+
+**Purpose**: Time calculation utilities for multi-file datasets
+
+**Location**: `time_utils.py` (346 lines)
+
+**Functions**:
+- `infer_time_frequency()` - Detect time frequency from coordinate values
+- `count_timesteps()` - Calculate timesteps between dates
+- `add_frequency()` - Add time periods to dates
+- `create_time_periods()` - Generate time period ranges
+- `check_time_range_overlap()` - Check if time ranges overlap
+
+**Features**:
+- Full cftime calendar support (standard, noleap, 360_day, etc.)
+- Handles extended time ranges beyond pandas limits
+- CF-compliant time unit parsing
+
+### mfdataset.py
+
+**Purpose**: Multi-file dataset support
+
+**Location**: `mfdataset.py` (454 lines)
+
+**Functions**:
+- `open_mfdataset()` - Open multiple NetCDF files as one dataset
+- `groupby_time_impl()` - Group dataset by time periods
+- `_read_file_metadata()` - Read metadata from NetCDF files
+- `_combine_file_metadata()` - Combine metadata from multiple files
+- `_create_time_subset_metadata()` - Create time-based subsets
+
+**Features**:
+- Metadata-only approach (no data loading)
+- Automatic frequency inference
+- Time-based grouping (decades, years, months, etc.)
+- File tracking and provenance
+
+### ncdump_parser.py
+
+**Purpose**: Parse ncdump output for metadata extraction
+
+**Location**: `ncdump_parser.py` (280 lines)
+
+**Functions**:
+- `parse_ncdump()` - Parse ncdump -h output
+- `_parse_dimensions()` - Extract dimensions
+- `_parse_variables()` - Extract variables
+- `_parse_attributes()` - Extract attributes
+
+**Features**:
+- Alternative to opening NetCDF files directly
+- Useful for remote or restricted file access
+- Handles complex ncdump output formats
+
 ## Future Extensions
 
-Planned for Phase 2:
+Potential additions:
 
-- **CMIPMixin**: CMIP table integration
-- **VocabularyMixin**: Controlled vocabulary mapping
-- **BoundsMixin**: Automatic bounds generation
+- **CMIPMixin**: CMIP table integration and validation
+- **BoundsMixin**: Automatic bounds generation for coordinates
 - **PluginMixin**: Custom validator plugins
+- **SpatialGroupingMixin**: Group by spatial regions
 
 ## Best Practices
 
