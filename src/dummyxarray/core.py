@@ -5,6 +5,8 @@ Provides DummyArray and DummyDataset classes with modular functionality
 through mixins.
 """
 
+from typing import List
+
 import numpy as np
 
 # Import mixins
@@ -815,3 +817,80 @@ class DummyDataset(
         from .mfdataset import open_mfdataset
 
         return open_mfdataset(paths, concat_dim=concat_dim, combine=combine, **kwargs)
+
+    def groupby_time(
+        self,
+        freq: str,
+        dim: str = "time",
+        normalize_units: bool = True,
+    ) -> List["DummyDataset"]:
+        """Group dataset by time frequency using metadata only.
+
+        This method splits a multi-file dataset into time-based groups without loading
+        any data arrays. Each group is a new DummyDataset with adjusted metadata.
+
+        Parameters
+        ----------
+        freq : str
+            Grouping frequency using pandas-style strings:
+            - Years: '1Y', '5Y', '10Y'
+            - Months: '1M', '3M', '6M'
+            - Days: '1D', '7D', '30D'
+            - Hours: '1H', '6H', '12H'
+        dim : str, default "time"
+            Time dimension to group by
+        normalize_units : bool, default True
+            Update time units to reference each group's start datetime
+
+        Returns
+        -------
+        list of DummyDataset
+            One dataset per time group, each with:
+            - Updated time:units attribute (if normalize_units=True)
+            - Filtered file sources for that time period
+            - Adjusted dimension sizes
+            - Preserved frequency attribute
+
+        Raises
+        ------
+        ValueError
+            If time coordinate has no frequency attribute (open with open_mfdataset)
+        ValueError
+            If time coordinate has no units attribute
+        ValueError
+            If dimension does not exist
+
+        Examples
+        --------
+        >>> # Open 100 years of hourly data
+        >>> ds = DummyDataset.open_mfdataset("hourly_*.nc", concat_dim="time")
+        >>> print(ds.coords['time'].attrs['frequency'])
+        '1H'
+        >>> print(ds.dims['time'])
+        876000
+
+        >>> # Group into decades
+        >>> decades = ds.groupby_time('10Y')
+        >>> print(len(decades))
+        10
+
+        >>> # Each decade has normalized units
+        >>> decade_0 = decades[0]
+        >>> print(decade_0.coords['time'].attrs['units'])
+        'hours since 2000-01-01 00:00:00'
+        >>> print(decade_0.dims['time'])
+        87600
+
+        >>> # Query files for specific decade
+        >>> files = decade_0.get_source_files()
+        >>> print(files)
+        ['hourly_2000.nc', 'hourly_2001.nc', ..., 'hourly_2009.nc']
+
+        See Also
+        --------
+        open_mfdataset : Open multiple files with automatic frequency inference
+        get_source_files : Query which files contain specific coordinate ranges
+        """
+        from .mfdataset import groupby_time_impl
+
+        return groupby_time_impl(self, freq, dim, normalize_units)
