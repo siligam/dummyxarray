@@ -1499,6 +1499,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#multi-file-dataset-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-File Dataset Support
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#more-examples" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1636,6 +1647,17 @@
     <span class="md-ellipsis">
       
         xarray-style Attribute Access
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multi-file-dataset-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-File Dataset Support
       
     </span>
   </a>
@@ -1968,12 +1990,38 @@
 <a id="__codelineno-8-40" name="__codelineno-8-40" href="#__codelineno-8-40"></a><span class="c1">#     standard_name: time</span>
 <a id="__codelineno-8-41" name="__codelineno-8-41" href="#__codelineno-8-41"></a><span class="c1">#     calendar: gregorian</span>
 </code></pre></div>
+<h2 id="multi-file-dataset-support">Multi-File Dataset Support<a class="headerlink" href="#multi-file-dataset-support" title="Permanent link">&para;</a></h2>
+<p>Work with multiple NetCDF files as a single dataset:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">dummyxarray</span><span class="w"> </span><span class="kn">import</span> <span class="n">DummyDataset</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="c1"># Open multiple files as one dataset</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="n">ds</span> <span class="o">=</span> <span class="n">DummyDataset</span><span class="o">.</span><span class="n">open_mfdataset</span><span class="p">(</span><span class="s2">&quot;data/*.nc&quot;</span><span class="p">,</span> <span class="n">concat_dim</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="c1"># Frequency is automatically inferred</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>  <span class="c1"># e.g., &quot;1H&quot; for hourly</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="c1"># Group by time periods</span>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="n">decades</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">groupby_time</span><span class="p">(</span><span class="s1">&#39;10Y&#39;</span><span class="p">)</span>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="c1"># Each decade is a separate DummyDataset</span>
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">decade</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">decades</span><span class="p">):</span>
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Decade </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Time steps: </span><span class="si">{</span><span class="n">decade</span><span class="o">.</span><span class="n">dims</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Time units: </span><span class="si">{</span><span class="n">decade</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Source files: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">decade</span><span class="o">.</span><span class="n">get_source_files</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a>
+<a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a><span class="c1"># Query which files contain specific time ranges</span>
+<a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a><span class="n">files</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">get_source_files</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span>
+<a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Files for first 100 timesteps: </span><span class="si">{</span><span class="n">files</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
 <h2 id="more-examples">More Examples<a class="headerlink" href="#more-examples" title="Permanent link">&para;</a></h2>
 <p>For more examples, check out the example files in the repository:</p>
 <ul>
 <li><code>example.py</code> - Basic usage and core features</li>
 <li><code>example_from_xarray.py</code> - Extracting metadata from xarray datasets</li>
 <li><code>example_populate.py</code> - Data population with random data</li>
+<li><code>example_mfdataset.py</code> - Multi-file dataset support (old version)</li>
+<li><code>example_groupby_time.py</code> - Time-based grouping with 5 comprehensive examples</li>
 <li>Basic usage examples</li>
 <li>Automatic dimension inference</li>
 <li>Encoding specifications</li>

@@ -518,6 +518,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#multi-file-dataset-support-phase-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-File Dataset Support (Phase 2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#architecture" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1667,6 +1678,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#multi-file-dataset-support-phase-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-File Dataset Support (Phase 2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#architecture" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1822,9 +1844,15 @@ This is particularly useful for:</p>
 ✅ <strong>Multiple formats</strong> - Export to YAML, JSON, Zarr, NetCDF<br />
 ✅ <strong>Template support</strong> - Save/load dataset specifications<br />
 ✅ <strong>Encoding support</strong> - dtype, chunks, compression settings</p>
+<h3 id="multi-file-dataset-support-phase-2">Multi-File Dataset Support (Phase 2)<a class="headerlink" href="#multi-file-dataset-support-phase-2" title="Permanent link">&para;</a></h3>
+<p>✅ <strong>Multi-file datasets</strong> - Open multiple NetCDF files as one dataset<br />
+✅ <strong>Automatic frequency inference</strong> - Detect time frequency from coordinates<br />
+✅ <strong>Time-based grouping</strong> - Group datasets by decades, years, months<br />
+✅ <strong>File tracking</strong> - Track which files contain which data ranges<br />
+✅ <strong>Metadata-only</strong> - No data loading, only metadata operations</p>
 <h3 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h3>
 <p>✅ <strong>Modular design</strong> - Mixin-based architecture for maintainability<br />
-✅ <strong>Well-tested</strong> - 159 tests with comprehensive coverage<br />
+✅ <strong>Well-tested</strong> - 188 tests with comprehensive coverage<br />
 ✅ <strong>Type-safe</strong> - Clear API with validation</p>
 <h2 id="quick-example">Quick Example<a class="headerlink" href="#quick-example" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">dummyxarray</span><span class="w"> </span><span class="kn">import</span> <span class="n">DummyDataset</span>
@@ -1876,10 +1904,13 @@ This is particularly useful for:</p>
 <ul>
 <li><a href="user-guide/basic-usage/">Basic Usage</a> - Core concepts and workflows</li>
 <li><a href="user-guide/cf-compliance/">CF Compliance</a> - Working with CF conventions</li>
+<li><a href="user-guide/cf-standards/">CF Standards</a> - CF standard names and vocabulary</li>
+<li><a href="user-guide/mfdataset/">Multi-File Datasets</a> - Work with multiple NetCDF files</li>
 <li><a href="user-guide/history-tracking/">History Tracking</a> - Track and replay operations</li>
 <li><a href="user-guide/validation/">Validation</a> - Validate dataset structure</li>
 <li><a href="user-guide/encoding/">Encoding</a> - Configure chunking and compression</li>
 <li><a href="user-guide/yaml-export/">YAML Export</a> - Save and load specifications</li>
+<li><a href="user-guide/ncdump-import/">ncdump Import</a> - Import from ncdump output</li>
 </ul>
 <h3 id="api-reference">API Reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h3>
 <ul>
@@ -1893,7 +1924,8 @@ This is particularly useful for:</p>
 </ul>
 <h2 id="project-status">Project Status<a class="headerlink" href="#project-status" title="Permanent link">&para;</a></h2>
 <p><strong>Phase 1 Complete</strong>: CF compliance, history tracking, and modular architecture<br />
-<strong>Phase 2 In Progress</strong>: CMIP table integration and controlled vocabularies</p>
+<strong>Phase 2 Complete</strong>: Multi-file datasets, time-based grouping, CF standards<br />
+<strong>Future</strong>: CMIP table integration and spatial grouping</p>
 <p>Contributions and feedback are welcome!</p>
 
 

@@ -2046,11 +2046,13 @@
 <a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│   ├── test_cf_compliance.py     # CFComplianceMixin tests
 <a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│   ├── test_io.py                # IOMixin tests
 <a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│   ├── test_validation.py        # ValidationMixin tests
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   └── test_data_generation.py   # DataGenerationMixin tests
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>├── integration/                   # Integration tests (workflows)
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│   └── test_workflows.py         # End-to-end workflow tests
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>└── fixtures/                      # Test data and fixtures
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    └── __init__.py
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   ├── test_data_generation.py   # DataGenerationMixin tests
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│   ├── test_mfdataset.py         # Multi-file dataset support tests
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│   └── test_ncdump_parser.py     # NetCDF metadata parser tests
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>├── integration/                   # Integration tests (workflows)
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│   └── test_workflows.py         # End-to-end workflow tests
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>└── fixtures/                      # Test data and fixtures
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    └── __init__.py
 </code></pre></div>
 <h2 id="test-categories">Test Categories<a class="headerlink" href="#test-categories" title="Permanent link">&para;</a></h2>
 <h3 id="unit-tests-testsunit">Unit Tests (<code>tests/unit/</code>)<a class="headerlink" href="#unit-tests-testsunit" title="Permanent link">&para;</a></h3>
@@ -2111,7 +2113,24 @@
 </li>
 <li>Coordinate data generation</li>
 <li>Variable data generation</li>
-<li>Metadata-based generation</li>
+<li>
+<p>Metadata-based generation</p>
+</li>
+<li>
+<p><strong>test_mfdataset.py</strong>: Multi-file dataset support</p>
+</li>
+<li>Opening multiple NetCDF files</li>
+<li>Frequency inference</li>
+<li>Time-based grouping</li>
+<li>
+<p>File tracking and queries</p>
+</li>
+<li>
+<p><strong>test_ncdump_parser.py</strong>: NetCDF metadata parser</p>
+</li>
+<li>Parsing ncdump output</li>
+<li>Dimension extraction</li>
+<li>Variable and attribute parsing</li>
 </ul>
 <h3 id="integration-tests-testsintegration">Integration Tests (<code>tests/integration/</code>)<a class="headerlink" href="#integration-tests-testsintegration" title="Permanent link">&para;</a></h3>
 <p>Test complete workflows and interactions between modules:</p>
@@ -2241,10 +2260,10 @@
 <li><strong>Clean up</strong>: Use fixtures with cleanup or <code>tmp_path</code> for files</li>
 </ol>
 <h2 id="test-coverage">Test Coverage<a class="headerlink" href="#test-coverage" title="Permanent link">&para;</a></h2>
-<p>Current coverage: <strong>159 tests</strong> across all modules</p>
+<p>Current coverage: <strong>188 tests</strong> across all modules</p>
 <ul>
-<li>Unit tests: ~130 tests</li>
-<li>Integration tests: ~29 tests</li>
+<li>Unit tests: ~160 tests</li>
+<li>Integration tests: ~28 tests</li>
 </ul>
 <p>Target: &gt;90% code coverage</p>
 
