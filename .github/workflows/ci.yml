@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, master, develop]
+    branches: [main]
   pull_request:
-    branches: [main, master, develop]
+    branches: [main]
 
 jobs:
   lint:
@@ -25,20 +25,18 @@ jobs:
       - name: Check import sorting (isort)
         run: pixi run check-format-imports
       
-      - name: Lint Python code (flake8)
+      - name: Lint Python code (ruff)
         run: pixi run lint-python
       
       - name: Lint Markdown files
         run: pixi run lint-markdown
 
   test:
-    name: Test on ${{ matrix.os }} - Python ${{ matrix.python-version }}
-    runs-on: ${{ matrix.os }}
+    name: Test - Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ['3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.11', '3.12']
     
     steps:
       - uses: actions/checkout@v4
@@ -53,7 +51,7 @@ jobs:
         run: pixi run test
       
       - name: Upload coverage reports
-        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+        if: matrix.python-version == '3.11'
         uses: codecov/codecov-action@v4
         with:
           file: ./coverage.xml
@@ -62,6 +60,7 @@ jobs:
   docs:
     name: Build Documentation
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
       

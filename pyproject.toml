@@ -29,6 +29,31 @@ use_parentheses = true
 ensure_newline_before_comments = true
 skip_glob = [".pixi/*", "build/*", "dist/*"]
 
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+]
+ignore = [
+    "E203", # whitespace before ':' (not needed with black)
+]
+# Note: UP (pyupgrade) rules disabled during heavy development
+# Can be enabled later to modernize type hints
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["dummyxarray"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
@@ -81,7 +106,7 @@ dev = [
     "pytest>=7.0.0",
     "black>=24.0.0",
     "isort>=5.13.0",
-    "flake8>=7.0.0",
+    "ruff>=0.1.0",
 ]
 docs = [
     "mkdocs>=1.5.0",
