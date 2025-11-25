@@ -165,6 +165,48 @@ print(f"Files in decade 0: {files}")
 
 ### Use Cases
 
+**Grouping files by temporal frequency with updated units:**
+
+A common workflow is to group files by a temporal frequency (e.g., yearly, monthly) and identify
+which files belong to each group—with time units automatically updated for each group:
+
+```python
+# 1. Open multiple files spanning several years
+ds = DummyDataset.open_mfdataset("hourly_*.nc", concat_dim="time")
+print(f"Original units: {ds.coords['time'].attrs['units']}")
+# "hours since 2000-01-01 00:00:00"
+
+# 2. Group by year
+yearly_groups = ds.groupby_time('1Y')
+print(f"Created {len(yearly_groups)} yearly groups")
+
+# 3. Each group has: identified files + updated temporal units
+for i, group in enumerate(yearly_groups):
+    files = group.get_source_files()
+    units = group.coords['time'].attrs['units']
+    print(f"\nYear {i + 2000}:")
+    print(f"  Files: {files}")
+    print(f"  Time units: {units}")
+    print(f"  Time steps: {group.dims['time']}")
+
+# Output:
+# Year 2000:
+#   Files: ['hourly_2000.nc']
+#   Time units: hours since 2000-01-01 00:00:00
+#   Time steps: 8760
+# Year 2001:
+#   Files: ['hourly_2001.nc']
+#   Time units: hours since 2001-01-01 00:00:00
+#   Time steps: 8760
+# ...
+```
+
+This is useful for:
+
+- **Data partitioning**: Split large datasets into manageable chunks for parallel processing
+- **Archive organization**: Identify which source files belong to each time period
+- **Metadata generation**: Create per-period specifications with correct temporal references
+
 **Climate data analysis planning:**
 
 ```python
