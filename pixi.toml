@@ -20,7 +20,7 @@ mkdocstrings-python = ">=1.7.0"
 # Linting and formatting
 black = ">=24.0.0"
 isort = ">=5.13.0"
-flake8 = ">=7.0.0"
+ruff = ">=0.1.0"
 markdownlint-cli2 = ">=0.12.0"
 netcdf4 = ">=1.7.3,<2"
 
@@ -40,7 +40,7 @@ format-imports = "isort src/ tests/ examples/"
 
 # Linting tasks
 lint = { depends-on = ["lint-python", "lint-markdown"] }
-lint-python = "flake8 src/ tests/ examples/"
+lint-python = "ruff check src/ tests/ examples/"
 lint-markdown = "markdownlint-cli2 '**/*.md' '#node_modules'"
 
 # Check formatting without modifying files
