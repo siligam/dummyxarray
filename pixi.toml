@@ -22,6 +22,7 @@ black = ">=24.0.0"
 isort = ">=5.13.0"
 ruff = ">=0.1.0"
 markdownlint-cli2 = ">=0.12.0"
+yamllint = ">=1.35.0"
 netcdf4 = ">=1.7.3,<2"
 
 [tasks]
@@ -39,9 +40,10 @@ format-python = "black src/ tests/ examples/"
 format-imports = "isort src/ tests/ examples/"
 
 # Linting tasks
-lint = { depends-on = ["lint-python", "lint-markdown"] }
+lint = { depends-on = ["lint-python", "lint-markdown", "lint-yaml"] }
 lint-python = "ruff check src/ tests/ examples/"
 lint-markdown = "markdownlint-cli2 '**/*.md' '#node_modules'"
+lint-yaml = "yamllint .github/workflows/"
 
 # Check formatting without modifying files
 check-format = { depends-on = ["check-format-python", "check-format-imports"] }

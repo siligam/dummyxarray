@@ -12,18 +12,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Pixi
         uses: prefix-dev/setup-pixi@v0.8.1
         with:
           pixi-version: latest
-      
+
       - name: Update dependencies
         run: pixi update
-      
+
       - name: Run tests with updated dependencies
         run: pixi run test
-      
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
@@ -32,9 +32,9 @@ jobs:
           title: 'chore: update pixi dependencies'
           body: |
             Automated dependency update via pixi.
-            
+
             This PR updates the pixi.lock file with the latest compatible versions.
-            
+
             Please review the changes and ensure all tests pass before merging.
           branch: chore/update-dependencies
           delete-branch: true
