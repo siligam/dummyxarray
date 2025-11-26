@@ -34,6 +34,9 @@ config:
   # Allow code blocks without language
   MD040: false
   
+  # Allow indented content (needed for MkDocs admonitions)
+  MD046: false
+  
   # Allow table column style variations
   MD060: false
   
