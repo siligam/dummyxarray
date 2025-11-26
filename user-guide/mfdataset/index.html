@@ -2158,6 +2158,17 @@ beginning:</p>
 <a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="n">decades</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">groupby_time</span><span class="p">(</span><span class="s1">&#39;10Y&#39;</span><span class="p">,</span> <span class="n">normalize_units</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="c1"># All groups keep the original units from the first file</span>
 </code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Difference from xarray</p>
+<p>This behavior differs from xarray's <code>groupby()</code>, which preserves the original time units
+and time values across all groups. DummyDataset's default (<code>normalize_units=True</code>) is
+intentional for generating <strong>independent dataset specifications</strong> where each group is
+self-contained.</p>
+<p>When using <code>populate_with_random_data()</code> to generate actual data, time values start from 0
+for each group. With <code>normalize_units=True</code>, this is correct because the units reference
+each group's start date. With <code>normalize_units=False</code>, the generated time values would
+not match xarray's behavior (which would have offsets like <code>[365, 366, ...]</code> for year 2).</p>
+</div>
 <h3 id="file-tracking-in-groups">File Tracking in Groups<a class="headerlink" href="#file-tracking-in-groups" title="Permanent link">&para;</a></h3>
 <p>File tracking information is preserved in grouped datasets:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">decades</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">groupby_time</span><span class="p">(</span><span class="s1">&#39;10Y&#39;</span><span class="p">)</span>
