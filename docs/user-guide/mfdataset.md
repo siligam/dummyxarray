@@ -150,6 +150,17 @@ decades = ds.groupby_time('10Y', normalize_units=False)
 # All groups keep the original units from the first file
 ```
 
+!!! note "Difference from xarray"
+    This behavior differs from xarray's `groupby()`, which preserves the original time units
+    and time values across all groups. DummyDataset's default (`normalize_units=True`) is
+    intentional for generating **independent dataset specifications** where each group is
+    self-contained.
+
+    When using `populate_with_random_data()` to generate actual data, time values start from 0
+    for each group. With `normalize_units=True`, this is correct because the units reference
+    each group's start date. With `normalize_units=False`, the generated time values would
+    not match xarray's behavior (which would have offsets like `[365, 366, ...]` for year 2).
+
 ### File Tracking in Groups
 
 File tracking information is preserved in grouped datasets:
