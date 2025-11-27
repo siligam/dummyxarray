@@ -318,5 +318,5 @@ print(data_source.metadata)
 
 ## Examples
 
-See the [Intake Catalog Example](../../examples/intake_catalog_example.py) for a complete 
+See the [Intake Catalog Example](https://github.com/siligam/dummyxarray/blob/main/examples/intake_catalog_example.py) for a complete 
 working demonstration of round-trip catalog functionality.
