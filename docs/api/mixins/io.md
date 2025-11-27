@@ -11,6 +11,7 @@ The `IOMixin` enables exporting and importing datasets in multiple formats:
 - **xarray** - Convert to/from xarray.Dataset
 - **Zarr** - Write directly to Zarr storage
 - **NetCDF** - Via xarray conversion
+- **Intake Catalogs** - Export and import Intake catalog YAML files
 
 ## Key Methods
 
@@ -22,11 +23,15 @@ The `IOMixin` enables exporting and importing datasets in multiple formats:
 - `save_yaml(filepath)` - Save to YAML file
 - `to_xarray()` - Convert to xarray.Dataset
 - `to_zarr(store, **kwargs)` - Write to Zarr store
+- `to_intake_catalog(name, description, driver, data_path, **kwargs)` - Export as Intake catalog YAML
+- `save_intake_catalog(path, name, description, driver, data_path, **kwargs)` - Save Intake catalog to file
 
 ### Import Methods
 
 - `from_xarray(xr_dataset)` - Create from xarray.Dataset (class method)
 - `load_yaml(filepath)` - Load from YAML file (class method)
+- `from_intake_catalog(catalog_source, source_name)` - Load from Intake catalog (class method)
+- `load_intake_catalog(path, source_name)` - Load from Intake catalog file (class method)
 
 ## Usage
 
@@ -45,6 +50,18 @@ ds = DummyDataset.from_xarray(xr_ds)
 
 # Write to Zarr
 ds.to_zarr("output.zarr")
+
+# Export to Intake catalog
+catalog_yaml = ds.to_intake_catalog(
+    name="my_data", 
+    description="My dataset",
+    driver="zarr"
+)
+ds.save_intake_catalog("catalog.yaml", name="my_data")
+
+# Import from Intake catalog
+loaded_ds = DummyDataset.from_intake_catalog("catalog.yaml", "my_data")
+loaded_ds = DummyDataset.load_intake_catalog("catalog.yaml", "my_data")
 ```
 
 ## API Reference
