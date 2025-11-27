@@ -46,6 +46,7 @@ This is particularly useful for:
 ✅ **Multiple formats** - Export to YAML, JSON, Zarr, NetCDF  
 ✅ **Template support** - Save/load dataset specifications  
 ✅ **Encoding support** - dtype, chunks, compression settings
+✅ **Intake catalogs** - Export and import Intake catalog YAML files
 
 ### Multi-File Dataset Support (Phase 2)
 
@@ -121,6 +122,7 @@ ds.to_zarr("output.zarr")
 - [Validation](user-guide/validation.md) - Validate dataset structure
 - [Encoding](user-guide/encoding.md) - Configure chunking and compression
 - [YAML Export](user-guide/yaml-export.md) - Save and load specifications
+- [Intake Catalogs](user-guide/intake-catalogs.md) - Export and import Intake catalogs
 - [ncdump Import](user-guide/ncdump-import.md) - Import from ncdump output
 
 ### API Reference

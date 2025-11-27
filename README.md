@@ -19,6 +19,7 @@ Perfect for planning datasets, generating templates, and ensuring CF compliance.
 - 📊 **Smart data generation** - Populate with realistic random data
 - 📝 **History tracking** - Record and replay all operations
 - 💾 **Multiple formats** - Export to YAML, JSON, Zarr, NetCDF
+- 🗂️ **Intake catalogs** - Export and import Intake catalog YAML files
 - 🎯 **Validation** - Catch errors before expensive operations
 
 ## Installation
@@ -71,6 +72,18 @@ ds.populate_with_random_data(seed=42)
 xr_ds = ds.to_xarray()
 ds.to_zarr("output.zarr")
 ds.save_yaml("template.yaml")
+
+# Export to Intake catalog
+catalog_yaml = ds.to_intake_catalog(
+    name="my_dataset", 
+    description="My climate dataset",
+    driver="zarr",
+    data_path="data/my_dataset.zarr"
+)
+ds.save_intake_catalog("catalog.yaml", name="my_dataset")
+
+# Import from Intake catalog
+loaded_ds = DummyDataset.from_intake_catalog("catalog.yaml", "my_dataset")
 ```
 
 ## Use Cases
@@ -84,6 +97,8 @@ ds.save_yaml("template.yaml")
 **Testing** - Generate realistic test datasets quickly
 
 **Documentation** - Export human-readable dataset specifications
+
+**Data Cataloging** - Create Intake catalogs for dataset discovery and access
 
 ## Documentation
 

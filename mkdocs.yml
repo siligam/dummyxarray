@@ -73,6 +73,7 @@ nav:
       - Validation: user-guide/validation.md
       - Encoding: user-guide/encoding.md
       - YAML Export: user-guide/yaml-export.md
+      - Intake Catalogs: user-guide/intake-catalogs.md
   - API Reference:
       - DummyDataset: api/dataset.md
       - DummyArray: api/array.md

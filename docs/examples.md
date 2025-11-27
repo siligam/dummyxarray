@@ -359,6 +359,64 @@ files = ds.get_source_files(time=slice(0, 100))
 print(f"Files for first 100 timesteps: {files}")
 ```
 
+## Intake Catalog Round-Trip
+
+Complete round-trip workflow with Intake catalogs:
+
+```python
+from dummyxarray import DummyDataset
+import tempfile
+import yaml
+
+# 1. Create original dataset
+ds = DummyDataset()
+ds.assign_attrs(
+    title="Climate Model Output",
+    institution="Example Climate Center",
+    Conventions="CF-1.8"
+)
+ds.add_dim("time", 12)
+ds.add_dim("lat", 180)
+ds.add_dim("lon", 360)
+ds.add_coord("time", dims=["time"], attrs={"units": "days since 2000-01-01"})
+ds.add_variable(
+    "temperature",
+    dims=["time", "lat", "lon"],
+    attrs={"units": "K", "standard_name": "air_temperature"},
+    encoding={"dtype": "float32", "chunks": [6, 32, 64]}
+)
+
+# 2. Export to Intake catalog
+catalog_yaml = ds.to_intake_catalog(
+    name="climate_data",
+    description="Climate model output with temperature",
+    driver="zarr",
+    data_path="data/climate_model_output.zarr"
+)
+
+print("Generated Intake catalog:")
+print(catalog_yaml)
+
+# 3. Save to file
+with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+    catalog_path = f.name
+    ds.save_intake_catalog(catalog_path, name="climate_data")
+
+# 4. Load from catalog (round-trip)
+restored_ds = DummyDataset.from_intake_catalog(catalog_path, "climate_data")
+
+# 5. Verify integrity
+print(f"Original dims: {ds.dims}")
+print(f"Restored dims: {restored_ds.dims}")
+print(f"Dims match: {ds.dims == restored_ds.dims}")
+print(f"Variables match: {set(ds.variables.keys()) == set(restored_ds.variables.keys())}")
+
+# 6. Load from dictionary
+catalog_dict = yaml.safe_load(catalog_yaml)
+loaded_from_dict = DummyDataset.from_intake_catalog(catalog_dict, "climate_data")
+print(f"Dict loading works: {loaded_from_dict.dims == ds.dims}")
+```
+
 ## More Examples
 
 For more examples, check out the example files in the repository:
@@ -368,6 +426,7 @@ For more examples, check out the example files in the repository:
 - `example_populate.py` - Data population with random data
 - `example_mfdataset.py` - Multi-file dataset support (old version)
 - `example_groupby_time.py` - Time-based grouping with 5 comprehensive examples
+- `intake_catalog_example.py` - Complete Intake catalog round-trip demonstration
 - Basic usage examples
 - Automatic dimension inference
 - Encoding specifications
@@ -375,3 +434,4 @@ For more examples, check out the example files in the repository:
 - xarray conversion
 - Zarr writing
 - YAML save/load
+- Intake catalog export and import
