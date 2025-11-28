@@ -2,102 +2,102 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://siligam.github.io/dummyxarray/</loc>
-         <lastmod>2025-11-27</lastmod>
+         <lastmod>2025-11-28</lastmod>
     </url>
     <url>
          <loc>https://siligam.github.io/dummyxarray/CF_STANDARDS_APPROACH/</loc>
-         <lastmod>2025-11-27</lastmod>
+         <lastmod>2025-11-28</lastmod>
     </url>
     <url>
          <loc>https://siligam.github.io/dummyxarray/architecture/</loc>
-         <lastmod>2025-11-27</lastmod>
+         <lastmod>2025-11-28</lastmod>
     </url>
     <url>
          <loc>https://siligam.github.io/dummyxarray/examples/</loc>
-         <lastmod>2025-11-27</lastmod>
+         <lastmod>2025-11-28</lastmod>
     </url>
     <url>
          <loc>https://siligam.github.io/dummyxarray/testing/</loc>
-         <lastmod>2025-11-27</lastmod>
+         <lastmod>2025-11-28</lastmod>
     </url>
     <url>
          <loc>https://siligam.github.io/dummyxarray/api/array/</loc>
-         <lastmod>2025-11-27</lastmod>
+         <lastmod>2025-11-28</lastmod>
     </url>
     <url>
          <loc>https://siligam.github.io/dummyxarray/api/dataset/</loc>
-         <lastmod>2025-11-27</lastmod>
+         <lastmod>2025-11-28</lastmod>
     </url>
     <url>
          <loc>https://siligam.github.io/dummyxarray/api/mixins/cf-compliance/</loc>
-         <lastmod>2025-11-27</lastmod>
+         <lastmod>2025-11-28</lastmod>
     </url>
     <url>
          <loc>https://siligam.github.io/dummyxarray/api/mixins/data-generation/</loc>
-         <lastmod>2025-11-27</lastmod>
+         <lastmod>2025-11-28</lastmod>
     </url>
     <url>
          <loc>https://siligam.github.io/dummyxarray/api/mixins/history/</loc>
-         <lastmod>2025-11-27</lastmod>
+         <lastmod>2025-11-28</lastmod>
     </url>
     <url>
          <loc>https://siligam.github.io/dummyxarray/api/mixins/io/</loc>
-         <lastmod>2025-11-27</lastmod>
+         <lastmod>2025-11-28</lastmod>
     </url>
     <url>
          <loc>https://siligam.github.io/dummyxarray/api/mixins/provenance/</loc>
-         <lastmod>2025-11-27</lastmod>
+         <lastmod>2025-11-28</lastmod>
     </url>
     <url>
          <loc>https://siligam.github.io/dummyxarray/api/mixins/validation/</loc>
-         <lastmod>2025-11-27</lastmod>
+         <lastmod>2025-11-28</lastmod>
     </url>
     <url>
          <loc>https://siligam.github.io/dummyxarray/getting-started/installation/</loc>
-         <lastmod>2025-11-27</lastmod>
+         <lastmod>2025-11-28</lastmod>
     </url>
     <url>
          <loc>https://siligam.github.io/dummyxarray/getting-started/quickstart/</loc>
-         <lastmod>2025-11-27</lastmod>
+         <lastmod>2025-11-28</lastmod>
     </url>
     <url>
          <loc>https://siligam.github.io/dummyxarray/user-guide/basic-usage/</loc>
-         <lastmod>2025-11-27</lastmod>
+         <lastmod>2025-11-28</lastmod>
     </url>
     <url>
          <loc>https://siligam.github.io/dummyxarray/user-guide/cf-compliance/</loc>
-         <lastmod>2025-11-27</lastmod>
+         <lastmod>2025-11-28</lastmod>
     </url>
     <url>
          <loc>https://siligam.github.io/dummyxarray/user-guide/cf-standards/</loc>
-         <lastmod>2025-11-27</lastmod>
+         <lastmod>2025-11-28</lastmod>
     </url>
     <url>
          <loc>https://siligam.github.io/dummyxarray/user-guide/encoding/</loc>
-         <lastmod>2025-11-27</lastmod>
+         <lastmod>2025-11-28</lastmod>
     </url>
     <url>
          <loc>https://siligam.github.io/dummyxarray/user-guide/history-tracking/</loc>
-         <lastmod>2025-11-27</lastmod>
+         <lastmod>2025-11-28</lastmod>
     </url>
     <url>
          <loc>https://siligam.github.io/dummyxarray/user-guide/intake-catalogs/</loc>
-         <lastmod>2025-11-27</lastmod>
+         <lastmod>2025-11-28</lastmod>
     </url>
     <url>
          <loc>https://siligam.github.io/dummyxarray/user-guide/mfdataset/</loc>
-         <lastmod>2025-11-27</lastmod>
+         <lastmod>2025-11-28</lastmod>
     </url>
     <url>
          <loc>https://siligam.github.io/dummyxarray/user-guide/ncdump-import/</loc>
-         <lastmod>2025-11-27</lastmod>
+         <lastmod>2025-11-28</lastmod>
     </url>
     <url>
          <loc>https://siligam.github.io/dummyxarray/user-guide/validation/</loc>
-         <lastmod>2025-11-27</lastmod>
+         <lastmod>2025-11-28</lastmod>
     </url>
     <url>
          <loc>https://siligam.github.io/dummyxarray/user-guide/yaml-export/</loc>
-         <lastmod>2025-11-27</lastmod>
+         <lastmod>2025-11-28</lastmod>
     </url>
 </urlset>
