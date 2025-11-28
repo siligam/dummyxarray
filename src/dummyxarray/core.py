@@ -116,7 +116,7 @@ class DummyArray:
             shape = np.asarray(self.data).shape
             if self.dims is None:
                 self.dims = [f"dim_{i}" for i in range(len(shape))]
-            return dict(zip(self.dims, shape))
+            return dict(zip(self.dims, shape, strict=True))
         return {}
 
     def _record_operation(self, func_name, args):
