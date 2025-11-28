@@ -15,6 +15,9 @@ zarr = ">=2.10.0"
 netcdf4 = ">=1.7.3,<2"
 xarray = ">=0.19.0"
 
+# Toolchain
+hatchling = ">=1.22"
+
 [feature.pytest.dependencies]
 pytest = ">=7.0.0"
 pytest-cov = ">=4.0.0"
@@ -78,6 +81,9 @@ check-format-imports = "isort --check-only src/ tests/ examples/"
 
 # Run all checks (format check + lint)
 check = { depends-on = ["check-format", "lint"] }
+
+# Build task (delegates to Hatchling)
+build = "python3 -m hatchling build"
 
 [environments.default]
 features = ["pytest", "lint", "docs"]
