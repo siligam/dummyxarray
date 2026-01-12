@@ -4,25 +4,143 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dummyxarray"
-version = "0.1.0"
-description = "A minimal xarray-like dummy dataset structure for prototyping and teaching."
+dynamic = ["version"]
+description = "A lightweight xarray-like object for building dataset metadata specifications"
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [
   { name = "Pavan Siligam" }
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 
-# Pixi manages dependencies — leave empty
-dependencies = []
+# Core dependencies (PyPI-compatible only)
+dependencies = [
+  "cf-xarray>=0.8.0",
+  "numpy>=1.20.0",
+  "pyyaml>=5.4.0",
+  "zarr>=2.10.0",
+  "xarray>=0.19.0",
+]
+
+[project.optional-dependencies]
+# NetCDF support (conda-only, not available on PyPI)
+netcdf = ["netcdf4>=1.7.3,<2"]
 
 [project.urls]
 Homepage = "https://github.com/siligam/dummyxarray"
 Repository = "https://github.com/siligam/dummyxarray"
 
+
+################################
+# Pixi configuration           #
+################################
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["osx-arm64", "osx-64", "linux-64"]
+
+# Runtime dependencies - use conda for everything including netcdf4
+[tool.pixi.dependencies]
+python = ">=3.9"
+cf-xarray = ">=0.8.0"
+numpy = ">=1.20.0"
+pyyaml = ">=5.4.0"
+zarr = ">=2.10.0"
+numcodecs = "*"
+xarray = ">=0.19.0"
+netcdf4 = ">=1.7.3,<2"
+# Build tools
+hatchling = ">=1.22"
+python-build = ">=1.0.0"
+
+# Development feature: Testing
+[tool.pixi.feature.pytest.dependencies]
+pytest = ">=7.0.0"
+pytest-cov = ">=4.0.0"
+
+[tool.pixi.feature.pytest.tasks]
+test = "PYTHONPATH=src pytest tests/ -v --cov=src --cov-report=term-missing"
+test-fast = "PYTHONPATH=src pytest tests/ -v -k 'not slow'"
+
+# Development feature: Linting
+[tool.pixi.feature.lint.dependencies]
+black = ">=24.0.0"
+isort = ">=5.13.0"
+ruff = ">=0.1.0"
+markdownlint-cli2 = ">=0.12.0"
+yamllint = ">=1.35.0"
+
+[tool.pixi.feature.lint.tasks]
+lint-python = "ruff check src/ tests/ examples/"
+lint-markdown = "markdownlint-cli2 '**/*.md' '#node_modules'"
+lint-yaml = "yamllint .github/workflows/"
+lint = { depends-on = ["lint-python", "lint-markdown", "lint-yaml"] }
+
+# Development feature: Documentation
+[tool.pixi.feature.docs.dependencies]
+mkdocs = ">=1.5.0"
+mkdocs-material = ">=9.0.0"
+mkdocstrings = ">=0.24.0"
+mkdocstrings-python = ">=1.7.0"
+
+[tool.pixi.feature.docs.tasks]
+docs-serve = "mkdocs serve"
+docs-build = "mkdocs build"
+docs-deploy = "mkdocs gh-deploy"
+
+# Pixi tasks
+[tool.pixi.tasks]
+# Development shortcuts
+test = { depends-on = ["pytest:test"] }
+test-fast = { depends-on = ["pytest:test-fast"] }
+python = "PYTHONPATH=src python"
+ipython = "PYTHONPATH=src ipython"
+example = "PYTHONPATH=src python examples/example.py"
+
+# Documentation
+docs-serve = { depends-on = ["docs:docs-serve"] }
+docs-build = { depends-on = ["docs:docs-build"] }
+docs-deploy = { depends-on = ["docs:docs-deploy"] }
+
+# Formatting tasks
+format = { depends-on = ["format-python", "format-imports"] }
+format-python = "black src/ tests/ examples/"
+format-imports = "isort src/ tests/ examples/"
+
+# Linting tasks
+lint = { depends-on = ["lint:lint"] }
+lint-python = { depends-on = ["lint:lint-python"] }
+lint-markdown = { depends-on = ["lint:lint-markdown"] }
+lint-yaml = { depends-on = ["lint:lint-yaml"] }
+
+# Check formatting without modifying files
+check-format = { depends-on = ["check-format-python", "check-format-imports"] }
+check-format-python = "black --check src/ tests/ examples/"
+check-format-imports = "isort --check-only src/ tests/ examples/"
+
+# Run all checks (format check + lint)
+check = { depends-on = ["check-format", "lint"] }
+
+# Build Python wheel and sdist (for PyPI) - outputs to dist/
+build = "python -m build --outdir dist"
+
+# Version management
+version = "python -m hatchling version"
+version-patch = "python -m hatchling version patch"
+version-minor = "python -m hatchling version minor"
+version-major = "python -m hatchling version major"
+
+# Pixi environments
+[tool.pixi.environments]
+default = { features = ["pytest", "lint", "docs"], solve-group = "default" }
+
+
 ################################
 # Hatch build configuration    #
 ################################
+
+[tool.hatch.version]
+path = "src/dummyxarray/__init__.py"
 
 [tool.hatch.build]
 exclude = [
