@@ -8,7 +8,7 @@ conversion to/from xarray, Zarr, and STAC formats.
 import json
 import uuid
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, TypeVar, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, TypeVar, Union
 
 if TYPE_CHECKING:
     from .core import DummyDataset
@@ -576,7 +576,8 @@ class IOMixin:
             The generated STAC Item
         """
         try:
-            from pystac import Item, Asset
+            from pystac import Asset, Item
+
             from .stac import dataset_to_stac_item
         except ImportError as e:
             raise ImportError(
@@ -650,8 +651,8 @@ class IOMixin:
 
     def _get_default_stac_extent(self) -> Dict[str, Any]:
         """Generate a default STAC extent from dataset attributes."""
-        from pystac import SpatialExtent, TemporalExtent
         from dateutil.parser import parse
+        from pystac import SpatialExtent, TemporalExtent
 
         extent = {"spatial": None, "temporal": None}
 

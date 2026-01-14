@@ -332,8 +332,8 @@ class TestSTACFunctionality:
     @pytest.fixture
     def temp_dir(self):
         """Create a temporary directory for file I/O tests."""
-        import tempfile
         import shutil
+        import tempfile
 
         temp_dir = tempfile.mkdtemp()
         yield temp_dir
@@ -530,8 +530,9 @@ class TestSTACFunctionality:
 
     def test_load_stac_collection_with_items(self, dataset_with_coords, temp_dir):
         """Test loading a STAC Collection with multiple items."""
-        import pystac
         from datetime import datetime
+
+        import pystac
 
         # Create a collection with multiple items
         collection = pystac.Collection(

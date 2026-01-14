@@ -6,10 +6,11 @@ item/collection conversion, spatial/temporal extent detection, and validation.
 """
 
 import json
-import numpy as np
-import pytest
 from datetime import datetime
 from pathlib import Path
+
+import numpy as np
+import pytest
 
 from dummyxarray import DummyDataset
 

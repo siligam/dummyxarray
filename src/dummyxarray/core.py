@@ -1056,6 +1056,7 @@ class DummyDataset(
                         # This is a simplified approach - in practice you'd need
                         # to handle different time encodings and units
                         from datetime import datetime, timedelta
+
                         import numpy as np
 
                         # Assume days since some epoch for now

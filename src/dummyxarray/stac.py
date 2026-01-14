@@ -6,11 +6,10 @@ STAC (SpatioTemporal Asset Catalog) Items and Collections.
 """
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 import numpy as np
-
-from pystac import Asset, Item, Collection, Extent, SpatialExtent, TemporalExtent
+from pystac import Asset, Collection, Extent, Item, SpatialExtent, TemporalExtent
 
 if TYPE_CHECKING:
     from .core import DummyDataset
