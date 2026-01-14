@@ -417,6 +417,237 @@ loaded_from_dict = DummyDataset.from_intake_catalog(catalog_dict, "climate_data"
 print(f"Dict loading works: {loaded_from_dict.dims == ds.dims}")
 ```
 
+## STAC Catalog Integration
+
+### Basic STAC Item Creation
+
+Create and export a dataset as a STAC Item:
+
+```python
+from dummyxarray import DummyDataset
+import numpy as np
+
+# Create dataset with spatial coordinates
+ds = DummyDataset()
+ds.add_dim('time', 12)
+ds.add_dim('lat', 180)
+ds.add_dim('lon', 360)
+
+ds.add_coord('lat', ['lat'], data=np.linspace(-89.5, 89.5, 180))
+ds.add_coord('lon', ['lon'], data=np.linspace(-179.5, 179.5, 360))
+
+ds.add_variable('temperature', ['time', 'lat', 'lon'],
+                attrs={'units': 'K', 'standard_name': 'air_temperature'})
+
+# Add metadata
+ds.attrs.update({
+    'title': 'Global Temperature Data',
+    'description': 'Monthly global temperature analysis',
+    'time_coverage_start': '2020-01-01T00:00:00Z',
+    'time_coverage_end': '2020-12-31T23:59:59Z'
+})
+
+# Convert to STAC Item
+item = ds.to_stac_item(
+    id='temperature-2020',
+    properties={'model': 'ERA5', 'resolution': '1-degree'}
+)
+
+# Save to file
+ds.save_stac_item('temperature_2020.json', id='temperature-2020')
+print(f"STAC Item created: {item.id}")
+print(f"Bbox: {item.bbox}")
+```
+
+### STAC Collection from Multiple Datasets
+
+Create a collection from multiple related datasets:
+
+```python
+from dummyxarray import DummyDataset
+import numpy as np
+
+# Create multiple monthly datasets
+datasets = []
+for month in range(1, 13):
+    ds = DummyDataset()
+    ds.add_dim('lat', 180)
+    ds.add_dim('lon', 360)
+    
+    ds.add_coord('lat', ['lat'], data=np.linspace(-89.5, 89.5, 180))
+    ds.add_coord('lon', ['lon'], data=np.linspace(-179.5, 179.5, 360))
+    
+    ds.add_variable('sst', ['lat', 'lon'],
+                    attrs={'units': 'degree_Celsius',
+                           'standard_name': 'sea_surface_temperature'})
+    
+    ds.attrs.update({
+        'title': f'SST 2020-{month:02d}',
+        'time_coverage_start': f'2020-{month:02d}-01T00:00:00Z'
+    })
+    
+    datasets.append(ds)
+
+# Create collection
+collection = DummyDataset.create_stac_collection(
+    datasets,
+    collection_id='sst-monthly-2020',
+    description='Monthly sea surface temperature for 2020',
+    license='CC-BY-4.0'
+)
+
+print(f"Collection created with {len(list(collection.get_items()))} items")
+```
+
+### Spatial Metadata Validation
+
+Validate spatial metadata before creating STAC catalogs:
+
+```python
+from dummyxarray import DummyDataset
+import numpy as np
+
+ds = DummyDataset()
+ds.add_dim('lat', 64)
+ds.add_dim('lon', 128)
+
+ds.add_coord('lat', ['lat'], 
+             data=np.linspace(-45, 45, 64),
+             attrs={'units': 'degrees_north', 'standard_name': 'latitude'})
+ds.add_coord('lon', ['lon'],
+             data=np.linspace(-90, 90, 128),
+             attrs={'units': 'degrees_east', 'standard_name': 'longitude'})
+
+# Validate spatial metadata
+validation = ds.validate_spatial_metadata()
+
+if validation['valid']:
+    print("✓ Spatial metadata is valid")
+    print(f"  Found: {', '.join(validation['found'])}")
+    
+    # Create STAC Item
+    item = ds.to_stac_item(id='validated-dataset')
+    print(f"  Bbox: {item.bbox}")
+else:
+    print("✗ Spatial validation failed:")
+    for issue in validation['issues']:
+        print(f"  - {issue}")
+```
+
+### Temporal Extent Inference
+
+Automatically infer temporal extent from time coordinates:
+
+```python
+from dummyxarray import DummyDataset
+import numpy as np
+
+ds = DummyDataset()
+ds.add_dim('time', 365)
+ds.add_dim('lat', 180)
+ds.add_dim('lon', 360)
+
+# Add time coordinate with CF-compliant units
+ds.add_coord('time', ['time'],
+             data=np.arange(365),
+             attrs={'units': 'days since 2020-01-01', 'calendar': 'gregorian'})
+
+# Infer temporal extent
+start, end = ds.infer_temporal_extent()
+
+print(f"Temporal coverage: {start} to {end}")
+print(f"Start: {ds.attrs['time_coverage_start']}")
+print(f"End: {ds.attrs['time_coverage_end']}")
+
+# Create STAC Item with inferred temporal extent
+item = ds.to_stac_item(id='daily-data-2020')
+print(f"STAC datetime: {item.datetime}")
+```
+
+### Regional Dataset with Custom Extent
+
+Create a regional dataset with explicit spatial extent:
+
+```python
+from dummyxarray import DummyDataset
+import numpy as np
+
+# North America regional dataset
+ds = DummyDataset()
+ds.add_dim('lat', 100)
+ds.add_dim('lon', 200)
+
+ds.add_coord('lat', ['lat'], data=np.linspace(25, 70, 100))
+ds.add_coord('lon', ['lon'], data=np.linspace(-170, -50, 200))
+
+ds.add_variable('precipitation', ['lat', 'lon'],
+                attrs={'units': 'mm/day', 'standard_name': 'precipitation_flux'})
+
+# Add explicit spatial extent
+ds.add_spatial_extent(
+    lat_bounds=(25, 70),
+    lon_bounds=(-170, -50)
+)
+
+ds.attrs.update({
+    'title': 'North America Precipitation',
+    'description': 'Regional precipitation data for North America',
+    'region': 'North America'
+})
+
+# Create STAC Item
+item = ds.to_stac_item(
+    id='na-precipitation',
+    properties={'region': 'north_america', 'coverage': 'regional'}
+)
+
+print(f"Regional bbox: {item.bbox}")
+print(f"Spatial extent: {ds.attrs['geospatial_bounds']}")
+```
+
+### STAC Roundtrip (Save and Load)
+
+Complete roundtrip workflow with STAC Items:
+
+```python
+from dummyxarray import DummyDataset
+import numpy as np
+
+# 1. Create original dataset
+ds = DummyDataset()
+ds.add_dim('time', 10)
+ds.add_dim('lat', 64)
+ds.add_dim('lon', 128)
+
+ds.add_coord('lat', ['lat'], data=np.linspace(-45, 45, 64))
+ds.add_coord('lon', ['lon'], data=np.linspace(-90, 90, 128))
+
+ds.add_variable('temperature', ['time', 'lat', 'lon'],
+                attrs={'units': 'K', 'standard_name': 'air_temperature'})
+
+ds.attrs.update({
+    'title': 'Temperature Analysis',
+    'institution': 'Climate Research Center'
+})
+
+# 2. Save as STAC Item
+ds.save_stac_item(
+    'temperature_item.json',
+    id='temp-analysis',
+    properties={'version': '1.0', 'quality': 'validated'}
+)
+
+# 3. Load from STAC Item
+loaded_ds = DummyDataset.load_stac_item('temperature_item.json')
+
+# 4. Verify roundtrip
+print(f"Original dims: {ds.dims}")
+print(f"Loaded dims: {loaded_ds.dims}")
+print(f"Dims match: {ds.dims == loaded_ds.dims}")
+print(f"Variables match: {set(ds.variables.keys()) == set(loaded_ds.variables.keys())}")
+print(f"Title preserved: {loaded_ds.attrs.get('title') == ds.attrs['title']}")
+```
+
 ## More Examples
 
 For more examples, check out the example files in the repository:

@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from .core import DummyDataset
 
 # Type variable for DummyDataset to handle forward references
-D = TypeVar('D', bound='DummyDataset')
+D = TypeVar("D", bound="DummyDataset")
 
 import yaml
 
@@ -550,7 +550,7 @@ class IOMixin:
             A new DummyDataset with the structure from the catalog
         """
         return cls.from_intake_catalog(path, source_name)
-        
+
     def to_stac_item(self, id, geometry=None, properties=None, assets=None, **kwargs):
         """
         Convert the dataset to a STAC Item.
@@ -583,14 +583,9 @@ class IOMixin:
                 "STAC support requires 'pystac' and other optional dependencies. "
                 "Install with: pip install 'dummyxarray[stac]'"
             ) from e
-            
+
         return dataset_to_stac_item(
-            self,
-            id=id,
-            geometry=geometry,
-            properties=properties,
-            assets=assets,
-            **kwargs
+            self, id=id, geometry=geometry, properties=properties, assets=assets, **kwargs
         )
 
     def to_stac_collection(
@@ -598,11 +593,11 @@ class IOMixin:
         id: str,
         description: Optional[str] = None,
         extent: Optional[Dict[str, Any]] = None,
-        **kwargs
-    ) -> 'pystac.Collection':
+        **kwargs,
+    ) -> "pystac.Collection":
         """
         Create a STAC Collection from this dataset.
-        
+
         Parameters
         ----------
         id : str
@@ -614,12 +609,12 @@ class IOMixin:
             will attempt to extract from dataset attributes.
         **kwargs
             Additional arguments passed to pystac.Collection
-            
+
         Returns
         -------
         pystac.Collection
             The generated STAC Collection
-            
+
         Examples
         --------
         >>> ds = DummyDataset()
@@ -639,59 +634,80 @@ class IOMixin:
         # Create a default extent if not provided
         if extent is None:
             extent = self._get_default_stac_extent()
-            
+
         # Create the collection
         collection = Collection(
             id=id,
-            description=description or self.attrs.get('description', ''),
+            description=description or self.attrs.get("description", ""),
             extent=extent,
-            **kwargs
+            **kwargs,
         )
-        
+
         # Add dataset metadata
         self._add_collection_metadata(collection)
-        
+
         return collection
-        
+
     def _get_default_stac_extent(self) -> Dict[str, Any]:
         """Generate a default STAC extent from dataset attributes."""
         from pystac import SpatialExtent, TemporalExtent
-        
-        extent = {'spatial': None, 'temporal': None}
-        
+        from dateutil.parser import parse
+
+        extent = {"spatial": None, "temporal": None}
+
         # Try to get spatial extent
-        if hasattr(self, 'geospatial_bounds'):
-            coords = self.geospatial_bounds['coordinates'][0]
+        if (
+            hasattr(self, "attrs")
+            and isinstance(self.attrs, dict)
+            and "geospatial_bounds" in self.attrs
+        ):
+            coords = self.attrs["geospatial_bounds"]["coordinates"][0]
             lons = [c[0] for c in coords]
             lats = [c[1] for c in coords]
             bbox = [min(lons), min(lats), max(lons), max(lats)]
-            extent['spatial'] = SpatialExtent(bboxes=[bbox])
-        
+            extent["spatial"] = SpatialExtent(bboxes=[bbox])
+
         # Try to get temporal extent
-        time_start = getattr(self, 'time_coverage_start', None)
-        time_end = getattr(self, 'time_coverage_end', time_start)
-        if time_start or time_end:
-            extent['temporal'] = TemporalExtent(intervals=[[time_start, time_end]])
-        
+        time_start = None
+        time_end = None
+        if hasattr(self, "attrs") and isinstance(self.attrs, dict):
+            time_start = self.attrs.get("time_coverage_start")
+            time_end = self.attrs.get("time_coverage_end", time_start)
+
+        def _parse_dt(val):
+            if val is None:
+                return None
+            if isinstance(val, str):
+                try:
+                    return parse(val)
+                except (ValueError, TypeError):
+                    return None
+            return val
+
+        start_dt = _parse_dt(time_start)
+        end_dt = _parse_dt(time_end)
+        if start_dt is not None or end_dt is not None:
+            extent["temporal"] = TemporalExtent(intervals=[[start_dt, end_dt]])
+
         return extent
-    
-    def _add_collection_metadata(self, collection: 'pystac.Collection') -> None:
+
+    def _add_collection_metadata(self, collection: "pystac.Collection") -> None:
         """Add dataset metadata to a STAC Collection."""
-        if hasattr(self, 'dims'):
-            collection.extra_fields['dims'] = dict(self.dims)
-        if hasattr(self, 'variables'):
-            collection.extra_fields['variables'] = list(self.variables.keys())
-        
+        if hasattr(self, "dims"):
+            collection.extra_fields["dims"] = dict(self.dims)
+        if hasattr(self, "variables"):
+            collection.extra_fields["variables"] = list(self.variables.keys())
+
     @classmethod
     def from_stac_item(cls, item):
         """
         Create a DummyDataset from a STAC Item.
-        
+
         Parameters
         ----------
         item : pystac.Item
             The STAC Item to convert
-            
+
         Returns
         -------
         DummyDataset
@@ -704,17 +720,17 @@ class IOMixin:
                 "STAC support requires 'pystac' and other optional dependencies. "
                 "Install with: pip install 'dummyxarray[stac]'"
             ) from e
-            
+
         return stac_item_to_dataset(item)
-        
+
     def save_stac_item(
-        self: 'D',
+        self: "D",
         path: str,
         id: Optional[str] = None,
         geometry: Optional[Dict[str, Any]] = None,
         properties: Optional[Dict[str, Any]] = None,
         assets: Optional[Dict[str, Any]] = None,
-        **kwargs
+        **kwargs,
     ) -> None:
         """
         Save the dataset as a STAC Item to a file.
@@ -741,28 +757,24 @@ class IOMixin:
                 "STAC file operations require 'pystac'. "
                 "Install with: pip install 'dummyxarray[stac]'"
             ) from e
-            
+
         # Create parent directories if they don't exist
         Path(path).parent.mkdir(parents=True, exist_ok=True)
-        
+
         # Convert to STAC Item
         item = self.to_stac_item(
             id=id or f"item-{str(uuid.uuid4())}",
             geometry=geometry,
             properties=properties,
             assets=assets,
-            **kwargs
+            **kwargs,
         )
-        
+
         # Save to file
         item.save_object(dest_href=path)
-        
+
     def save_stac_collection(
-        self: 'D',
-        path: str,
-        id: Optional[str] = None,
-        description: Optional[str] = None,
-        **kwargs
+        self: "D", path: str, id: Optional[str] = None, description: Optional[str] = None, **kwargs
     ) -> None:
         """
         Save the dataset as a STAC Collection to a file.
@@ -785,20 +797,20 @@ class IOMixin:
                 "STAC file operations require 'pystac'. "
                 "Install with: pip install 'dummyxarray[stac]'"
             ) from e
-            
+
         # Create parent directories if they don't exist
         Path(path).parent.mkdir(parents=True, exist_ok=True)
-        
+
         # Convert to STAC Collection
         collection = self.to_stac_collection(
             id=id or f"collection-{str(uuid.uuid4())}",
             description=description or "A collection of STAC items",
-            **kwargs
+            **kwargs,
         )
-        
+
         # Save to file
-        collection.save(dest_href=path)
-    
+        collection.save_object(dest_href=path)
+
     @classmethod
     def load_stac_item(cls: type[D], path: str, **kwargs) -> D:
         """
@@ -823,16 +835,13 @@ class IOMixin:
                 "STAC file operations require 'pystac'. "
                 "Install with: pip install 'dummyxarray[stac]'"
             ) from e
-            
+
         item = Item.from_file(path)
         return cls.from_stac_item(item, **kwargs)
-        
+
     @classmethod
     def load_stac_collection(
-        cls: type[D],
-        path: str,
-        item_loader: Optional[Callable[[Any], D]] = None,
-        **kwargs
+        cls: type[D], path: str, item_loader: Optional[Callable[[Any], D]] = None, **kwargs
     ) -> Union[D, List[D]]:
         """
         Load a STAC Collection from a file and convert it to one or more DummyDatasets.
@@ -859,11 +868,14 @@ class IOMixin:
                 "STAC file operations require 'pystac'. "
                 "Install with: pip install 'dummyxarray[stac]'"
             ) from e
-            
+
         collection = Collection.from_file(path)
-        
+
         if item_loader is not None:
             return item_loader(collection)
-            
-        # If no item_loader provided, load all items
-        return [cls.from_stac_item(item, **kwargs) for item in collection.get_all_items()]
+
+        # If no item_loader provided, attempt to convert the collection.
+        # This will return:
+        # - a DummyDataset (if no resolvable items)
+        # - or a list of DummyDatasets (if items are available)
+        return cls.from_stac_collection(collection, **kwargs)

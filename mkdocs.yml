@@ -74,6 +74,9 @@ nav:
       - Encoding: user-guide/encoding.md
       - YAML Export: user-guide/yaml-export.md
       - Intake Catalogs: user-guide/intake-catalogs.md
+      - STAC Catalogs: user-guide/stac-catalogs.md
+      - Spatial Metadata: user-guide/spatial-metadata.md
+      - Geospatial Workflows: user-guide/geospatial-workflows.md
   - API Reference:
       - DummyDataset: api/dataset.md
       - DummyArray: api/array.md

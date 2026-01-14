@@ -400,7 +400,7 @@ print(f"\nFiles to process: {len(relevant_files)}")
 
 ## API Reference
 
-See the [API documentation](../api/dataset.md#open_mfdataset) for detailed parameter descriptions.
+See the [API documentation](../api/dataset.md#dummyxarray.DummyDataset.open_mfdataset) for detailed parameter descriptions.
 
 ## See Also
 
