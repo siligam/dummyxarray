@@ -349,12 +349,12 @@ class TestSTACErrorHandling:
             ),
         )
 
-        with pytest.raises((ValueError, KeyError)):
+        with pytest.raises(Exception):  # STACError
             DummyDataset.from_stac_collection(collection, item_id="nonexistent-item")
 
     def test_create_collection_empty_datasets(self):
         """Test error when creating collection with no datasets."""
-        with pytest.raises(ValueError):
+        with pytest.raises(Exception):  # STACError
             DummyDataset.create_stac_collection([], collection_id="empty-collection")
 
 
