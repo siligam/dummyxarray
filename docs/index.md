@@ -123,6 +123,9 @@ ds.to_zarr("output.zarr")
 - [Encoding](user-guide/encoding.md) - Configure chunking and compression
 - [YAML Export](user-guide/yaml-export.md) - Save and load specifications
 - [Intake Catalogs](user-guide/intake-catalogs.md) - Export and import Intake catalogs
+- [STAC Catalogs](user-guide/stac-catalogs.md) - STAC Item and Collection support
+- [Spatial Metadata](user-guide/spatial-metadata.md) - Geospatial extent and validation
+- [Geospatial Workflows](user-guide/geospatial-workflows.md) - Real-world STAC examples
 - [ncdump Import](user-guide/ncdump-import.md) - Import from ncdump output
 
 ### API Reference
@@ -139,6 +142,7 @@ ds.to_zarr("output.zarr")
 
 **Phase 1 Complete**: CF compliance, history tracking, and modular architecture  
 **Phase 2 Complete**: Multi-file datasets, time-based grouping, CF standards  
+**Phase 3 Complete**: STAC catalog support, spatial metadata, geospatial workflows  
 **Future**: CMIP table integration and spatial grouping
 
 Contributions and feedback are welcome!

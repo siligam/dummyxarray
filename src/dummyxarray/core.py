@@ -5,7 +5,7 @@ Provides DummyArray and DummyDataset classes with modular functionality
 through mixins.
 """
 
-from typing import List
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 
@@ -894,3 +894,316 @@ class DummyDataset(
         from .mfdataset import groupby_time_impl
 
         return groupby_time_impl(self, freq, dim, normalize_units)
+
+    # STAC-related methods
+    def to_stac_item(
+        self,
+        id: str,
+        geometry: Optional[Dict[str, Any]] = None,
+        properties: Optional[Dict[str, Any]] = None,
+        assets: Optional[Dict[str, Any]] = None,
+        collection_id: Optional[str] = None,
+        **kwargs,
+    ):
+        """
+        Convert this DummyDataset to a STAC Item.
+
+        Parameters
+        ----------
+        id : str
+            Unique identifier for the STAC Item
+        geometry : dict, optional
+            GeoJSON geometry dict (required if not in dataset.attrs)
+        properties : dict, optional
+            Additional properties for the STAC Item
+        assets : dict, optional
+            Dictionary of pystac.Asset objects
+        collection_id : str, optional
+            ID of the parent collection
+        **kwargs
+            Additional arguments passed to pystac.Item
+
+        Returns
+        -------
+        pystac.Item
+            The generated STAC Item
+
+        Examples
+        --------
+        >>> ds = DummyDataset()
+        >>> ds.add_dim("lat", 10)
+        >>> ds.add_dim("lon", 20)
+        >>> item = ds.to_stac_item(
+        ...     id="climate-data-2020",
+        ...     geometry={"type": "Polygon", "coordinates": [...]},
+        ...     properties={"datetime": "2020-01-01T00:00:00Z"}
+        ... )
+        """
+        from .stac import dataset_to_stac_item
+
+        return dataset_to_stac_item(
+            self,
+            id=id,
+            geometry=geometry,
+            properties=properties,
+            assets=assets,
+            collection_id=collection_id,
+            **kwargs,
+        )
+
+    def to_stac_collection(
+        self,
+        id: str,
+        description: Optional[str] = None,
+        license: Optional[str] = None,
+        extent: Optional[Any] = None,
+        **kwargs,
+    ):
+        """
+        Convert this DummyDataset to a STAC Collection.
+
+        Parameters
+        ----------
+        id : str
+            Unique identifier for the STAC Collection
+        description : str, optional
+            Description of the collection
+        license : str, optional
+            License for the collection
+        extent : pystac.Extent, optional
+            Spatial and temporal extent
+        **kwargs
+            Additional arguments passed to pystac.Collection
+
+        Returns
+        -------
+        pystac.Collection
+            The generated STAC Collection
+
+        Examples
+        --------
+        >>> ds = DummyDataset()
+        >>> collection = ds.to_stac_collection(
+        ...     id="climate-collection",
+        ...     description="Climate model output collection",
+        ...     license="MIT"
+        ... )
+        """
+        from .stac import dataset_to_stac_collection
+
+        return dataset_to_stac_collection(
+            self, id=id, description=description, license=license, extent=extent, **kwargs
+        )
+
+    def add_spatial_extent(self, lat_bounds: tuple, lon_bounds: tuple):
+        """
+        Add spatial extent information to the dataset.
+
+        Parameters
+        ----------
+        lat_bounds : tuple
+            (min_lat, max_lat) latitude bounds
+        lon_bounds : tuple
+            (min_lon, max_lon) longitude bounds
+
+        Examples
+        --------
+        >>> ds = DummyDataset()
+        >>> ds.add_spatial_extent(lat_bounds=(-90, 90), lon_bounds=(-180, 180))
+        """
+        min_lat, max_lat = lat_bounds
+        min_lon, max_lon = lon_bounds
+
+        self.attrs["geospatial_bounds"] = {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [min_lon, min_lat],
+                    [max_lon, min_lat],
+                    [max_lon, max_lat],
+                    [min_lon, max_lat],
+                    [min_lon, min_lat],
+                ]
+            ],
+        }
+        self.attrs["geospatial_lat_min"] = min_lat
+        self.attrs["geospatial_lat_max"] = max_lat
+        self.attrs["geospatial_lon_min"] = min_lon
+        self.attrs["geospatial_lon_max"] = max_lon
+
+    def infer_temporal_extent(self):
+        """
+        Infer temporal extent from time coordinate.
+
+        Returns
+        -------
+        tuple
+            (start_time, end_time) as datetime objects or None if not found
+
+        Examples
+        --------
+        >>> ds = DummyDataset()
+        >>> ds.add_coord("time", ["time"], attrs={"units": "days since 2000-01-01"})
+        >>> start, end = ds.infer_temporal_extent()
+        """
+        if "time" in self.coords:
+            time_coord = self.coords["time"]
+            if hasattr(time_coord, "data") and time_coord.data is not None:
+                try:
+                    # Try to get time values
+                    time_values = time_coord.data
+                    if len(time_values) > 0:
+                        # This is a simplified approach - in practice you'd need
+                        # to handle different time encodings and units
+                        from datetime import datetime, timedelta
+
+                        import numpy as np
+
+                        # Assume days since some epoch for now
+                        if "units" in time_coord.attrs:
+                            units = time_coord.attrs["units"]
+                            if "since" in units:
+                                epoch_str = units.split("since")[1].strip()
+                                try:
+                                    epoch = datetime.fromisoformat(epoch_str.replace("Z", "+00:00"))
+                                    start_delta = timedelta(days=float(np.min(time_values)))
+                                    end_delta = timedelta(days=float(np.max(time_values)))
+                                    start_time = epoch + start_delta
+                                    end_time = epoch + end_delta
+
+                                    self.attrs["time_coverage_start"] = start_time.isoformat()
+                                    self.attrs["time_coverage_end"] = end_time.isoformat()
+                                    return start_time, end_time
+                                except (ValueError, TypeError):
+                                    pass
+                except Exception:
+                    pass
+        return None, None
+
+    def validate_spatial_metadata(self):
+        """
+        Validate spatial metadata in the dataset.
+
+        Returns
+        -------
+        dict
+            Validation results with any issues found
+
+        Examples
+        --------
+        >>> ds = DummyDataset()
+        >>> ds.add_spatial_extent(lat_bounds=(-90, 90), lon_bounds=(-180, 180))
+        >>> validation = ds.validate_spatial_metadata()
+        >>> print(validation['valid'])
+        True
+        """
+        issues = []
+
+        # Check geospatial_bounds
+        if "geospatial_bounds" in self.attrs:
+            bounds = self.attrs["geospatial_bounds"]
+            if not isinstance(bounds, dict):
+                issues.append("geospatial_bounds must be a dictionary")
+            elif "type" not in bounds or "coordinates" not in bounds:
+                issues.append("geospatial_bounds missing required 'type' or 'coordinates'")
+            elif bounds["type"] != "Polygon":
+                issues.append("geospatial_bounds type must be 'Polygon'")
+        else:
+            # Try to infer from coordinates
+            lat_found = any(name in self.coords for name in ["lat", "latitude", "Latitude"])
+            lon_found = any(name in self.coords for name in ["lon", "longitude", "Longitude"])
+            if not (lat_found and lon_found):
+                issues.append(
+                    "No spatial information found - need geospatial_bounds or lat/lon coordinates"
+                )
+
+        return {"valid": len(issues) == 0, "issues": issues}
+
+    @classmethod
+    def from_stac_item(cls, item):
+        """
+        Create a DummyDataset from a STAC Item.
+
+        Parameters
+        ----------
+        item : pystac.Item
+            The STAC Item to convert
+
+        Returns
+        -------
+        DummyDataset
+            The generated DummyDataset
+
+        Examples
+        --------
+        >>> import pystac
+        >>> item = pystac.Item.from_file("data.json")
+        >>> ds = DummyDataset.from_stac_item(item)
+        """
+        from .stac import stac_item_to_dataset
+
+        return stac_item_to_dataset(item)
+
+    @classmethod
+    def from_stac_collection(cls, collection, item_id=None):
+        """
+        Create a DummyDataset from a STAC Collection.
+
+        Parameters
+        ----------
+        collection : pystac.Collection
+            The STAC Collection to convert
+        item_id : str, optional
+            Specific item ID to extract from collection
+
+        Returns
+        -------
+        DummyDataset or list of DummyDataset
+            The generated DummyDataset(s)
+
+        Examples
+        --------
+        >>> import pystac
+        >>> collection = pystac.Collection.from_file("collection.json")
+        >>> ds = DummyDataset.from_stac_collection(collection, item_id="climate-data-2020")
+        """
+        from .stac import stac_collection_to_dataset
+
+        return stac_collection_to_dataset(collection, item_id)
+
+    @classmethod
+    def create_stac_collection(cls, datasets, collection_id, description=None, license=None):
+        """
+        Create a STAC Collection from multiple datasets.
+
+        Parameters
+        ----------
+        datasets : list of DummyDataset
+            List of datasets to include in the collection
+        collection_id : str
+            Unique identifier for the STAC Collection
+        description : str, optional
+            Description of the collection
+        license : str, optional
+            License for the collection
+
+        Returns
+        -------
+        pystac.Collection
+            The generated STAC Collection
+
+        Examples
+        --------
+        >>> temperature_ds = DummyDataset()
+        >>> precipitation_ds = DummyDataset()
+        >>> wind_ds = DummyDataset()
+        >>> collection = DummyDataset.create_stac_collection(
+        ...     [temperature_ds, precipitation_ds, wind_ds],
+        ...     collection_id="climate-2020"
+        ... )
+        """
+        from .stac import create_stac_collection_from_datasets
+
+        return create_stac_collection_from_datasets(
+            datasets, collection_id, description=description, license=license
+        )
