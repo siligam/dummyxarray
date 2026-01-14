@@ -63,3 +63,8 @@ dummy_xarray.md
 # OS
 .DS_Store
 Thumbs.db
+
+# other
+.serena# pixi environments
+.pixi/*
+!.pixi/config.toml

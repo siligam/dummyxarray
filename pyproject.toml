@@ -1,138 +1,217 @@
-[tool.black]
-line-length = 100
-target-version = ['py39', 'py310', 'py311', 'py312']
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-  # directories
-  \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | \.pixi
-  | _build
-  | buck-out
-  | build
-  | dist
-)/
-'''
-
-[tool.isort]
-profile = "black"
-line_length = 100
-multi_line_output = 3
-include_trailing_comma = true
-force_grid_wrap = 0
-use_parentheses = true
-ensure_newline_before_comments = true
-skip_glob = [".pixi/*", "build/*", "dist/*"]
-
-[tool.hatch.metadata]
-allow-direct-references = true
-
-[tool.ruff]
-line-length = 100
-target-version = "py39"
-fix = true
-
-[tool.ruff.lint]
-select = [
-    "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings
-    "F",   # pyflakes
-    "I",   # isort
-    "B",   # flake8-bugbear
-    "C4",  # flake8-comprehensions
-]
-ignore = [
-    "E203", # whitespace before ':' (not needed with black)
-]
-# Note: UP (pyupgrade) rules disabled during heavy development
-# Can be enabled later to modernize type hints
-
-[tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401"]
-
-[tool.ruff.lint.isort]
-known-first-party = ["dummyxarray"]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = ["test_*.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
-addopts = "-v --strict-markers"
-markers = [
-    "unit: Unit tests for individual modules",
-    "integration: Integration tests for workflows",
-    "slow: Tests that take a long time to run",
-]
-
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.22"]
 build-backend = "hatchling.build"
 
 [project]
 name = "dummyxarray"
-version = "0.1.0"
+dynamic = ["version"]
 description = "A lightweight xarray-like object for building dataset metadata specifications"
 readme = "README.md"
-requires-python = ">=3.9"
-license = {text = "MIT"}
-keywords = ["xarray", "metadata", "netcdf", "zarr", "climate", "data"]
+license = { file = "LICENSE" }
 authors = [
-    {name = "Pavan Siligam", email = "pavan.siligam@example.com"}
+  { name = "Pavan Siligam" }
 ]
-classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Intended Audience :: Science/Research",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Scientific/Engineering",
-]
+requires-python = ">=3.9"
+
+# Core dependencies (PyPI-compatible only)
 dependencies = [
-    "numpy>=1.20.0",
-    "xarray>=0.19.0",
-    "cf-xarray>=0.8.0",
-    "pyyaml>=5.4.0",
-    "zarr>=2.10.0",
-    "numcodecs>=0.10.0",
-    "netcdf4>=1.7.3,<2",
-    "cftime>=1.6.0",
+  "cf-xarray>=0.8.0",
+  "numpy>=1.20.0",
+  "pyyaml>=5.4.0",
+  "zarr>=2.10.0",
+  "xarray>=0.19.0",
 ]
 
 [project.optional-dependencies]
-dev = [
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
-    "black>=24.0.0",
-    "isort>=5.13.0",
-    "ruff>=0.1.0",
-    "markdownlint-cli2>=0.12.0",
-    "yamllint>=1.35.0",
-]
+# NetCDF support (conda-only, not available on PyPI)
+netcdf = ["netcdf4>=1.7.3,<2"]
+# STAC support
 stac = [
-    "pystac>=1.6.0",
-    "pyproj>=3.4.0",
-    "shapely>=2.0.0",
-]
-docs = [
-    "mkdocs>=1.5.0",
-    "mkdocs-material>=9.0.0",
-    "mkdocstrings>=0.24.0",
-    "mkdocstrings-python>=1.7.0",
+  "pystac>=1.6.0",
+  "pyproj>=3.4.0",
+  "shapely>=2.0.0",
 ]
 
 [project.urls]
 Homepage = "https://github.com/siligam/dummyxarray"
-Documentation = "https://siligam.github.io/dummyxarray/"
 Repository = "https://github.com/siligam/dummyxarray"
-Issues = "https://github.com/siligam/dummyxarray/issues"
+
+
+################################
+# Pixi configuration           #
+################################
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["osx-arm64", "osx-64", "linux-64"]
+
+# Runtime dependencies - use conda for everything including netcdf4
+[tool.pixi.dependencies]
+python = ">=3.9"
+cf-xarray = ">=0.8.0"
+numpy = ">=1.20.0"
+pyyaml = ">=5.4.0"
+zarr = ">=2.10.0"
+numcodecs = "*"
+xarray = ">=0.19.0"
+netcdf4 = ">=1.7.3,<2"
+cftime = ">=1.6.0"
+# STAC support
+pystac = ">=1.6.0"
+pyproj = ">=3.4.0"
+shapely = ">=2.0.0"
+# Build tools
+hatchling = ">=1.22"
+python-build = ">=1.0.0"
+
+# Development feature: Testing
+[tool.pixi.feature.pytest.dependencies]
+pytest = ">=7.0.0"
+pytest-cov = ">=4.0.0"
+
+[tool.pixi.feature.pytest.tasks]
+test = "PYTHONPATH=src pytest tests/ -v --cov=src --cov-report=term-missing"
+test-fast = "PYTHONPATH=src pytest tests/ -v -k 'not slow'"
+
+# Development feature: Linting
+[tool.pixi.feature.lint.dependencies]
+black = ">=24.0.0"
+isort = ">=5.13.0"
+ruff = ">=0.1.0"
+markdownlint-cli2 = ">=0.12.0"
+yamllint = ">=1.35.0"
+
+[tool.pixi.feature.lint.tasks]
+lint-python = "ruff check src/ tests/ examples/"
+lint-markdown = "markdownlint-cli2 '**/*.md' '#node_modules'"
+lint-yaml = "yamllint .github/workflows/"
+lint = { depends-on = ["lint-python", "lint-markdown", "lint-yaml"] }
+
+# Development feature: Documentation
+[tool.pixi.feature.docs.dependencies]
+mkdocs = ">=1.5.0"
+mkdocs-material = ">=9.0.0"
+mkdocstrings = ">=0.24.0"
+mkdocstrings-python = ">=1.7.0"
+
+[tool.pixi.feature.docs.tasks]
+docs-serve = "mkdocs serve"
+docs-build = "mkdocs build"
+docs-deploy = "mkdocs gh-deploy"
+
+# Pixi tasks
+[tool.pixi.tasks]
+# Development shortcuts
+test = { depends-on = ["pytest:test"] }
+test-fast = { depends-on = ["pytest:test-fast"] }
+python = "PYTHONPATH=src python"
+ipython = "PYTHONPATH=src ipython"
+example = "PYTHONPATH=src python examples/example.py"
+
+# Documentation
+docs-serve = { depends-on = ["docs:docs-serve"] }
+docs-build = { depends-on = ["docs:docs-build"] }
+docs-deploy = { depends-on = ["docs:docs-deploy"] }
+
+# Formatting tasks
+format = { depends-on = ["format-python", "format-imports"] }
+format-python = "black src/ tests/ examples/"
+format-imports = "isort src/ tests/ examples/"
+
+# Linting tasks
+lint = { depends-on = ["lint:lint"] }
+lint-python = { depends-on = ["lint:lint-python"] }
+lint-markdown = { depends-on = ["lint:lint-markdown"] }
+lint-yaml = { depends-on = ["lint:lint-yaml"] }
+
+# Check formatting without modifying files
+check-format = { depends-on = ["check-format-python", "check-format-imports"] }
+check-format-python = "black --check src/ tests/ examples/"
+check-format-imports = "isort --check-only src/ tests/ examples/"
+
+# Run all checks (format check + lint)
+check = { depends-on = ["check-format", "lint"] }
+
+# Build Python wheel and sdist (for PyPI) - outputs to dist/
+build = "python -m build --outdir dist"
+
+# Version management
+version = "python -m hatchling version"
+version-patch = "python -m hatchling version patch"
+version-minor = "python -m hatchling version minor"
+version-major = "python -m hatchling version major"
+
+# Pixi environments
+[tool.pixi.environments]
+default = { features = ["pytest", "lint", "docs"], solve-group = "default" }
+
+
+################################
+# Hatch build configuration    #
+################################
+
+[tool.hatch.version]
+path = "src/dummyxarray/__init__.py"
+
+[tool.hatch.build]
+exclude = [
+  "/tests",
+  "/docs",
+  ".github",
+  ".pixi",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dummyxarray"]
+
+
+###############################
+# Ruff (linting)              #
+###############################
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+extend-select = [
+  "I",   # import sorting
+  "B",   # flake8-bugbear
+  "E",   # pycodestyle errors
+  "F",   # pyflakes
+]
+ignore = [
+  "E501",  # line length handled by formatter
+]
+
+
+###############################
+# Black (formatting)          #
+###############################
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+
+[tool.isort]
+profile = "black"
+
+
+###############################
+# Pyright (type checking)     #
+###############################
+
+[tool.pyright]
+include = ["src"]
+pythonVersion = "3.10"
+typeCheckingMode = "basic"
+
+
+###############################
+# Pytest                      #
+###############################
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+addopts = "-q"
+testpaths = ["tests"]
