@@ -2,7 +2,8 @@
 
 ## Overview
 
-DummyXarray provides comprehensive support for **STAC (SpatioTemporal Asset Catalog)**, a standardized way to describe geospatial assets. STAC support enables you to:
+DummyXarray provides comprehensive support for **STAC (SpatioTemporal Asset Catalog)**, a standardized
+way to describe geospatial assets. STAC support enables you to:
 
 - Export datasets as STAC Items and Collections
 - Import datasets from STAC catalogs

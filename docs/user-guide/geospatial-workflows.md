@@ -2,7 +2,8 @@
 
 ## Overview
 
-This guide provides end-to-end examples of geospatial workflows using DummyXarray's STAC support, demonstrating real-world use cases from data creation to catalog publishing.
+This guide provides end-to-end examples of geospatial workflows using DummyXarray's STAC support,
+demonstrating real-world use cases from data creation to catalog publishing.
 
 ## Workflow 1: Climate Data Publishing
 

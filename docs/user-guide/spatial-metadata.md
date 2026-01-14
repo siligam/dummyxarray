@@ -2,7 +2,9 @@
 
 ## Overview
 
-DummyXarray provides comprehensive support for spatial metadata, enabling you to describe the geographic extent and coordinate systems of your datasets. This is essential for geospatial data workflows and STAC catalog integration.
+DummyXarray provides comprehensive support for spatial metadata, enabling you to describe the geographic
+extent and coordinate systems of your datasets. This is essential for geospatial data workflows and STAC
+catalog integration.
 
 ## Spatial Extent
 
