@@ -10,13 +10,15 @@ import uuid
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, TypeVar, Union
 
+import yaml
+
 if TYPE_CHECKING:
+    from pystac import Collection
+
     from .core import DummyDataset
 
 # Type variable for DummyDataset to handle forward references
 D = TypeVar("D", bound="DummyDataset")
-
-import yaml
 
 
 class IOMixin:
@@ -576,8 +578,6 @@ class IOMixin:
             The generated STAC Item
         """
         try:
-            from pystac import Asset, Item
-
             from .stac import dataset_to_stac_item
         except ImportError as e:
             raise ImportError(
@@ -595,7 +595,7 @@ class IOMixin:
         description: Optional[str] = None,
         extent: Optional[Dict[str, Any]] = None,
         **kwargs,
-    ) -> "pystac.Collection":
+    ) -> "Collection":
         """
         Create a STAC Collection from this dataset.
 
@@ -692,7 +692,7 @@ class IOMixin:
 
         return extent
 
-    def _add_collection_metadata(self, collection: "pystac.Collection") -> None:
+    def _add_collection_metadata(self, collection: "Collection") -> None:
         """Add dataset metadata to a STAC Collection."""
         if hasattr(self, "dims"):
             collection.extra_fields["dims"] = dict(self.dims)
@@ -752,7 +752,7 @@ class IOMixin:
             Additional arguments passed to to_stac_item()
         """
         try:
-            from pystac import Item
+            from pystac import Item  # noqa: F401
         except ImportError as e:
             raise ImportError(
                 "STAC file operations require 'pystac'. "
@@ -792,7 +792,7 @@ class IOMixin:
             Additional arguments passed to to_stac_collection()
         """
         try:
-            from pystac import Collection
+            from pystac import Collection  # noqa: F401
         except ImportError as e:
             raise ImportError(
                 "STAC file operations require 'pystac'. "

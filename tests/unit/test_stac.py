@@ -5,9 +5,7 @@ This module tests the STAC (SpatioTemporal Asset Catalog) support including
 item/collection conversion, spatial/temporal extent detection, and validation.
 """
 
-import json
 from datetime import datetime
-from pathlib import Path
 
 import numpy as np
 import pytest
@@ -351,12 +349,12 @@ class TestSTACErrorHandling:
             ),
         )
 
-        with pytest.raises(Exception):  # Should raise STACError
+        with pytest.raises((ValueError, KeyError)):
             DummyDataset.from_stac_collection(collection, item_id="nonexistent-item")
 
     def test_create_collection_empty_datasets(self):
         """Test error when creating collection with no datasets."""
-        with pytest.raises(Exception):  # Should raise STACError
+        with pytest.raises(ValueError):
             DummyDataset.create_stac_collection([], collection_id="empty-collection")
 
 
