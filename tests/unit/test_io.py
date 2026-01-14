@@ -341,7 +341,6 @@ class TestSTACFunctionality:
 
     def test_to_stac_item_basic(self, dataset_with_coords):
         """Test basic STAC Item creation."""
-        import pystac
 
         # Add some attributes that would be useful for STAC
         dataset_with_coords.attrs.update(
@@ -373,7 +372,6 @@ class TestSTACFunctionality:
     @pytest.mark.skipif(not has_stac(), reason="STAC dependencies not installed")
     def test_to_stac_collection_basic(self, dataset_with_coords):
         """Test basic STAC Collection creation."""
-        import pystac
 
         # Add collection metadata
         dataset_with_coords.attrs.update(
@@ -399,7 +397,6 @@ class TestSTACFunctionality:
     @pytest.mark.skipif(not has_stac(), reason="STAC dependencies not installed")
     def test_stac_roundtrip(self, dataset_with_coords):
         """Test round-trip conversion between DummyDataset and STAC Item."""
-        import pystac
 
         # Add some test data
         dataset_with_coords.add_variable(
@@ -458,7 +455,6 @@ class TestSTACFunctionality:
 
     def test_save_load_stac_item_roundtrip(self, dataset_with_coords, temp_dir):
         """Test saving and loading a STAC Item to/from disk."""
-        import pystac
 
         # Add some attributes that would be useful for STAC
         dataset_with_coords.attrs.update(
